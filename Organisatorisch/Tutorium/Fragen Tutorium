@@ -1,3 +1,4 @@
+- Muss das Proposal auf englisch gehalten werden? Soll PowerPoint auf englisch sein?`
 - Wie wichtig ist datenvorbereitung/ preprocessing, was soll man da machen? (Filterung, Rauschdetektion, Kantendetektion usw.)
 - Brauchen die Bilder eine einheitliche größe/ein einheitliches format
 - wie soll das clustering der für clustering method vorgesehenen Bilder überprüft werden bzw. wie findet man die optimale anzahl an centroids --> kein ground truth --> kein dice score
@@ -6,3 +7,4 @@
 - was bei GitHub Arbeit wichtig (Proposal)-> Branches, Projects, Discussions --> WAS NOCH? Was gibt es noch?
 - welche clustering methoden (KNN K-Means, Otsu usw.)-- wird noch was außer K-Means u. Otsu erwartet?
 - wie soll man die verschiedenen color models benutzen?
+- Ist es sinnvoller in den Farbräumen CIELab oder HSV zu arbeiten? Wie/ mit welcher Methode funktioniert der Vergleich der color method usage?
