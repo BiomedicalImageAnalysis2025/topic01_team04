@@ -8,3 +8,4 @@
 - welche clustering methoden (KNN K-Means, Otsu usw.)-- wird noch was außer K-Means u. Otsu erwartet?
 - wie soll man die verschiedenen color models benutzen?
 - Ist es sinnvoller in den Farbräumen CIELab oder HSV zu arbeiten? Wie/ mit welcher Methode funktioniert der Vergleich der color method usage?
+- Farbchannelextraction --> funktioniert nicht
