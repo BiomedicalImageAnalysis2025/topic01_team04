@@ -1,2 +1,5 @@
-- Brauchen die Bilder eine einheitliche 
+- Brauchen die Bilder eine einheitliche größe/ein einheitliches format
+- wie soll das clustering der für clustering method vorgesehenen Bilder überprüft werden bzw. wie findet man die optimale anzahl an centroids --> kein ground truth --> kein dice score
+--> kann man ellbow method oder shilouette score benutzen 
+- müssen wir/ ist es sinnvoll eine PCA zu machen
 
