@@ -1,6 +1,12 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+from PIL import Image
+import os
+
+
+
+
 
 def apply_gaussian_filter(input_path, kernel_size=5):
     """
@@ -30,18 +36,39 @@ def apply_gaussian_filter(input_path, kernel_size=5):
 
 
 
-def display_image(original, filtered):
-    """Zeige Original und gefiltertes Bild nebeneinander"""
-    plt.figure(figsize=(12, 6))
+def save_image(img, name, ext="png"):
+    """
+    Speichert ein NumPy-Bildarray `img` in den Downloads-Ordner.
     
-    plt.subplot(1, 2, 1)
+    - `name`: Basis-Name der Datei (ohne Extension)
+    - `ext`: gewünschte Dateiendung, z.B. "png", "jpg", "tif" (default: "png")
+    
+    Matplotlib/Pillow erkennt aus der Extension automatisch das Format.
+    """
+    # 1) Pfad zum Download-Ordner (Windows, macOS, Linux)
+    downloads = os.path.join(os.path.expanduser("~"), "Downloads")
+    # 2) kompletten Dateinamen zusammenbauen
+    filename = f"{name}.{ext.lstrip('.')}"
+    output_path = os.path.join(downloads, filename)
+    # 3) sicherstellen, dass es den Ordner gibt
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    # 4) speichern
+    plt.imsave(output_path, img)
+    print(f"✅ Image saved to: {output_path}")
+
+
+
+
+
+def display_images(original, name="Image"):
+    """Zeige Originalbild in Jupyter an"""
+
+    plt.figure(figsize=(12, 12))
     plt.imshow(original)
-    plt.title('Original Bild')
+    plt.title(name)
     plt.axis('off')
-    
-    plt.subplot(1, 2, 2)
-    plt.imshow(filtered)
-    plt.title('Gauß-Gefiltertes Bild')
-    plt.axis('off')
-    
     plt.show()
+
+
+
+
