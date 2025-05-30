@@ -1,9 +1,9 @@
 # Convert RGB image to HSV image
 
 import cv2 as cv2
-
+import matplotlib.pyplot as plt
 # Read the image
-image = cv2.imread('input_image.jpg')
+image = cv2.imread('/Users/daviddulkies/Documents/GitHub/topic01_team04/Code/Original_Images/Clustering/Data/Yeast_Cells.jpg')
 # Convert the image from BGR to HSV
 hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 # Save the HSV image
@@ -11,3 +11,11 @@ cv2.imwrite('output_image_hsv.jpg', hsv_image)
 # Display the original and HSV images
 cv2.imshow('Original Image', image)
 cv2.imshow('HSV Image', hsv_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+
+# extract HSV channels
+hue_channel = hsv_image[:, :, 0]
+saturation_channel = hsv_image[:, :, 1]
+value_channel = hsv_image[:, :, 2]
