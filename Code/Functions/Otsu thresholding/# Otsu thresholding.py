@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 def otsu_thresholding(grayscale_image):
     """
-    Apply Otsu's thresholding method to an image.
+    Apply Otsu's thresholding method to an grayscale image.
     
     Parameters:
     image (numpy.ndarray): Input grayscale image.
@@ -22,15 +22,38 @@ def otsu_thresholding(grayscale_image):
     return binary_image
 
 
-image_path = "/Users/daviddulkies/Documents/GitHub/topic01_team04/Code/Original_Images/Otsu/Data/NIH3T3/img/dna-0.png" 
+def plot_histogram(grayscale_image):
+    """
+    Plot the histogram of the grayscale image.
+    
+    Parameters:
+    image (numpy.ndarray): Input grayscale image.
+    """
+    # Calculate histogram
+    hist = cv2.calcHist([image], [0], None, [256], [0, 256])
+    
+    # Plot histogram
+    import matplotlib.pyplot as plt
+    plt.figure(figsize=(10, 5))
+    plt.title("Grayscale Histogram")
+    plt.xlabel("Pixel Intensity")
+    plt.ylabel("Frequency")
+    plt.plot(hist)
+    plt.xlim([0, 256])
+    plt.show() 
 
-# Bild einlesen in Graustufen
-grayscale_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
-# Otsu anwenden
-binary_result = otsu_thresholding(grayscale_image)
-
-# Ergebnis anzeigen
-cv2.imshow("Otsu Thresholded", binary_result)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+def rgb_to_grayscale(image):
+    """
+    Convert an RGB image to grayscale.
+    
+    Parameters:
+    image (numpy.ndarray): Input RGB image.
+    
+    Returns:
+    numpy.ndarray: Grayscale image.
+    """
+    if len(image.shape) != 3 or image.shape[2] != 3:
+        raise ValueError("Input image must be an RGB image.")
+    
+    return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
