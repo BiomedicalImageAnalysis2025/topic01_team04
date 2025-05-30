@@ -1,21 +1,98 @@
-# Convert RGB image to HSV image
-
 import cv2 as cv2
 import matplotlib.pyplot as plt
-# Read the image
-image = cv2.imread('/Users/daviddulkies/Documents/GitHub/topic01_team04/Code/Original_Images/Clustering/Data/Yeast_Cells.jpg')
-# Convert the image from BGR to HSV
-hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-# Save the HSV image
-cv2.imwrite('output_image_hsv.jpg', hsv_image)
-# Display the original and HSV images
-cv2.imshow('Original Image', image)
-cv2.imshow('HSV Image', hsv_image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
 
 
-# extract HSV channels
-hue_channel = hsv_image[:, :, 0]
-saturation_channel = hsv_image[:, :, 1]
-value_channel = hsv_image[:, :, 2]
+def rgb_to_hsv(image_path):
+    """
+    Converts an RGB image to an HSV image
+    
+    Parameters:
+    image_path (str): Path to the input RGB image.
+    
+    Returns:
+    tuple: HSV image and its individual channels (Hue, Saturation, Value).
+    """
+    # Read the image
+    image = cv2.imread(image_path)
+    
+    # Convert the image from BGR to HSV
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+ 
+    return hsv_image
+
+
+def hue_channel(hsv_image):
+    """
+    Extract the Hue channel from the HSV image.
+    
+    Parameters:
+    hsv_image (numpy.ndarray): Input HSV image.
+    
+    Returns:
+    numpy.ndarray: Hue channel.
+    """
+    return hsv_image[:, :, 0]
+
+
+def saturation_channel(hsv_image):
+    """
+    Extract the Saturation channel from the HSV image.
+
+    Parameters:
+    hsv_image (numpy.ndarray): Input HSV image.
+    Returns:
+    numpy.ndarray: Saturation channel.
+    """
+    return hsv_image[:, :, 1]
+
+
+def value_channel(hsv_image):
+    """ Extract the Value channel from the HSV image.
+    Parameters:
+    hsv_image (numpy.ndarray): Input HSV image.
+    Returns:
+    numpy.ndarray: Value channel.
+    """
+    return hsv_image[:, :, 2]
+
+
+def plot_hsv_channels(hsv_image):
+    """
+    Plot the Hue, Saturation, and Value channels of the HSV image.
+    
+    Parameters:
+    hsv_image (numpy.ndarray): Input HSV image.
+    """
+    plt.figure(figsize=(12, 4))
+    
+    plt.subplot(1, 3, 1)
+    plt.imshow(hue_channel(hsv_image), cmap='hsv')
+    plt.axis('off')
+    plt.title('Hue Channel')
+    
+    plt.subplot(1, 3, 2)
+    plt.imshow(saturation_channel(hsv_image), cmap='gray')
+    plt.axis('off')
+    plt.title('Saturation Channel')
+    
+    plt.subplot(1, 3, 3)
+    plt.imshow(value_channel(hsv_image), cmap='gray')
+    plt.axis('off')
+    plt.title('Value Channel')
+    
+    plt.show()
+    return hsv_image, hue_channel(hsv_image), saturation_channel(hsv_image), value_channel(hsv_image)
+
+
+def save_hsv_channels(hsv_image, output_prefix):
+    """
+    Save the Hue, Saturation, and Value channels as images.
+    Parameters:
+    hsv_image (numpy.ndarray): Input HSV image.
+    output_prefix (str): Prefix for the output image files.
+    """
+    cv2.imwrite(f'{output_prefix}_hue_channel.jpg', hue_channel(hsv_image))
+    cv2.imwrite(f'{output_prefix}_saturation_channel.jpg', saturation_channel(hsv_image))
+    cv2.imwrite(f'{output_prefix}_value_channel.jpg', value_channel(hsv_image))
+    cv2.imwrite(f'{output_prefix}_hsv_image.jpg', hsv_image)
+    return hsv_image, hue_channel(hsv_image), saturation_channel(hsv_image), value_channel(hsv_image)
