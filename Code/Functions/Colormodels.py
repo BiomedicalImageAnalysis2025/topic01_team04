@@ -10,10 +10,9 @@ def rgb_to_hsv(input_path):
     image (numpy.ndarray): Input image in RGB format.
     
     Returns:
-    tuple: HSV image and its individual channels (Hue, Saturation, Value).
+    Returns:
+        np.ndarray: HSV image.
     """
-    # Read the image
-    image = cv2.imread(input_path)
     
     # Convert the image from BGR to HSV
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
