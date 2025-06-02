@@ -2,24 +2,24 @@ import cv2 as cv2
 import matplotlib.pyplot as plt
 
 
-def rgb_to_hsv(input_path):
+def rgb_to_hsv(image):
     """
-    Converts an RGB image to an HSV image
+    Konvertiert ein RGB-Bild (numpy array) in den HSV-Farbraum.
     
-    Parameters:
-    image (numpy.ndarray): Input image in RGB format.
+    Parameter:
+    image (numpy.ndarray): Eingabebild im RGB-Format
     
-    Returns:
-    tuple: HSV image and its individual channels (Hue, Saturation, Value).
+    Rückgabe:
+    image_hsv (numpy.ndarray): Bild im HSV-Farbraum
     """
-    # Read the image
-    image = cv2.imread(input_path)
-    
-    # Convert the image from BGR to HSV
-    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
- 
-    return hsv_image
+    if image is None:
+        print("Fehler: Bild ist None.")
+        return None
 
+    # Konvertierung von RGB (matplotlib) zu HSV (OpenCV erwartet BGR, daher zuerst RGB->BGR)
+    image_bgr = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    image_hsv = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)
+    return image_hsv
 
 def hue_channel(hsv_image):
     """
