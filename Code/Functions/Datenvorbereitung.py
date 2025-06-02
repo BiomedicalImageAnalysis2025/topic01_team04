@@ -89,7 +89,7 @@ def save_image(img, name, ext="png"):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     # 4) speichern
     plt.imsave(output_path, img)
-    print(f"✅ Image saved to: {output_path}")
+    print(f"Image saved to: {output_path}")
 
 
 
@@ -98,7 +98,7 @@ def save_image(img, name, ext="png"):
 def display_images(original, name="Image"):
     """Zeige Originalbild in Jupyter an"""
 
-    plt.figure(figsize=(12, 12))
+    plt.figure(figsize=(7, 7))
     plt.imshow(original)
     plt.title(name)
     plt.axis('off')
@@ -212,8 +212,8 @@ def z_normalize(rgb_image: np.ndarray) -> np.ndarray:
     Führt eine Z-Transformation (Standardisierung) auf einem RGB-Bild durch,
     wobei Kanäle mit σ=0 nicht verändert werden (bleiben 0).
     """
-    # ✅ Eingabeprüfung: unverändert
-    if not isinstance(rgb_image, np.ndarray):
+    # Eingabeprüfung:
+    if not isinstance(rgb_image, np.ndarray):  
         raise TypeError("Eingabebild muss ein NumPy-Array sein.")
     if rgb_image.ndim != 3 or rgb_image.shape[2] != 3:
         raise ValueError("Eingabebild muss die Form (H, W, 3) haben (RGB).")
@@ -230,7 +230,7 @@ def z_normalize(rgb_image: np.ndarray) -> np.ndarray:
 
     # ✅ NEU: Schutz gegen Division durch 0
     # Hier ersetzen wir std == 0 durch 1 → verhindert division durch 0
-    safe_stds = np.where(stds == 0, 1.0, stds)  # 🔧 NEU
+    safe_stds = np.where(stds == 0, 1.0, stds)  
 
     # ✅ Umformen für Broadcasting
     means_reshaped = means.reshape((1, 1, 3))
@@ -307,3 +307,20 @@ def apply_gaussian_to_array(image_array, kernel_size=5):
 
     blurred = cv2.GaussianBlur(image_array, (kernel_size, kernel_size), 0)
     return blurred
+
+
+
+def apply_median_filter(image, kernel=3):
+    """
+    Wendet einen Medianfilter auf das gegebene Bild an.
+
+    Parameter:
+    - image: np.ndarray, das Eingabebild (z. B. HSV oder RGB)
+    - kernel: int, die Größe des Median-Kernels (muss ungerade sein)
+
+    """
+    if kernel % 2 == 0 or kernel < 1:
+        raise ValueError("Kernelgröße muss eine ungerade positive Zahl sein (z. B. 3, 5, 7).")
+    
+    filtered = cv2.medianBlur(image, kernel)
+    return filtered

@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.spatial import KDTree
 
 
 #Function to extract the single colour channels of the image (wahrscheinlich unnötig)
@@ -93,7 +94,7 @@ def update_centroids(pixels, labels, k):
     return new_centroids
 
 
-# Function to perform K-Means clustering
+# Function to perform K-Means clustering in RGB space
 def kmeans_clusteringRGB(image, k, max_iterations=100, return_labels_centroids=False):
     """
     Perform K-means clustering on a 3D image.
@@ -110,6 +111,101 @@ def kmeans_clusteringRGB(image, k, max_iterations=100, return_labels_centroids=F
     """
     # Reshape Image
     reshaped_image = image.reshape(-1, 3)
+
+    # Initialize centroids
+    centroids = init_centroids(k)
+
+    for _ in range(max_iterations):
+        # Assign pixels to the nearest centroid
+        labels = assign_to_centroids(reshaped_image, centroids)
+
+        # Update centroids based on the assigned pixels
+        new_centroids = update_centroids(reshaped_image, labels, k)
+
+        # Check for convergence (if centroids do not change)
+        if np.all(centroids == new_centroids):
+            break
+
+        centroids = new_centroids
+
+    # Create segmented image based on final labels
+    labels_2d = labels.reshape(image.shape[0], image.shape[1])
+    segmented_image = np.zeros_like(image)
+    for i in range(k):
+        segmented_image[labels_2d == i] = centroids[i]
+
+    if return_labels_centroids:
+        return segmented_image, labels, centroids
+
+    return segmented_image
+
+
+ #Function to perform K-Means clustering in HSV space
+def kmeans_clusteringHSV(image, k, max_iterations=100, return_labels_centroids=False):
+    """
+    Perform K-means clustering on a 3D image in HSV space.
+
+    Parameters:
+    - image: 3D numpy array representing the image.
+    - k: Number of clusters.
+    - max_iterations: Maximum number of iterations for convergence.
+
+    Returns:
+    - segmented_image: 3D numpy array with clustered pixel values in HSV space.
+    - (optional) labels: 1D array of cluster assignments.
+    - (optional) centroids: 2D array of centroid values in HSV space.
+    """
+    # Convert RGB to HSV
+    hsv_image = plt.colors.rgb_to_hsv(image / 255.0)  # Normalize to [0, 1] for conversion
+
+    # Reshape Image
+    reshaped_image = hsv_image.reshape(-1, 3)
+
+    # Initialize centroids
+    centroids = init_centroids(k)
+
+    for _ in range(max_iterations):
+        # Assign pixels to the nearest centroid
+        labels = assign_to_centroids(reshaped_image, centroids)
+
+        # Update centroids based on the assigned pixels
+        new_centroids = update_centroids(reshaped_image, labels, k)
+
+        # Check for convergence (if centroids do not change)
+        if np.all(centroids == new_centroids):
+            break
+
+        centroids = new_centroids
+
+    # Create segmented image based on final labels
+    labels_2d = labels.reshape(image.shape[0], image.shape[1])
+    segmented_image = np.zeros_like(hsv_image)
+    for i in range(k):
+        segmented_image[labels_2d == i] = centroids[i]
+
+    if return_labels_centroids:
+        return segmented_image, labels, centroids
+
+    return segmented_image
+
+
+ #Function to perform K-Means clustering in Intensity space for grayscale images
+def kmeans_clusteringGrayscale(image, k, max_iterations=100, return_labels_centroids=False):
+    """
+    Perform K-means clustering on a grayscale image.
+
+    Parameters:
+    - image: 2D numpy array representing the grayscale image.
+    - k: Number of clusters.
+    - max_iterations: Maximum number of iterations for convergence.
+
+    Returns:
+    - segmented_image: 2D numpy array with clustered pixel values.
+    - (optional) labels: 1D array of cluster assignments.
+    - (optional) centroids: 1D array of centroid values.
+    """
+    # Reshape Image
+    reshaped_image = image.reshape(-1, 1)
 
     # Initialize centroids
     centroids = init_centroids(k)
@@ -204,3 +300,106 @@ def find_elbow(wcss):
         distances.append(dist)
     elbow_index = np.argmax(distances)
     return all_k[elbow_index]
+
+
+
+
+
+
+
+#kDTree approach
+
+def assign_to_centroids_kdtree(pixels, centroids):
+    """
+    Weist jedem Pixel den Index des nächstgelegenen Zentroiden zu, mit KD-Tree.
+    """
+    from scipy.spatial import KDTree as KDTree
+    tree = KDTree(centroids)
+    distances, labels = tree.query(pixels)
+    return labels
+
+def kmeans_clusteringRGB_kdtree(image, k, max_iterations=100, return_labels_centroids=False):
+    reshaped_image = image.reshape(-1, 3)
+    centroids = init_centroids(k)
+
+    for _ in range(max_iterations):
+        labels = assign_to_centroids_kdtree(reshaped_image, centroids)
+        new_centroids = update_centroids(reshaped_image, labels, k)
+        if np.all(centroids == new_centroids):
+            break
+        centroids = new_centroids
+
+    labels_2d = labels.reshape(image.shape[0], image.shape[1])
+    segmented_image = np.zeros_like(image)
+    for i in range(k):
+        segmented_image[labels_2d == i] = centroids[i]
+
+    if return_labels_centroids:
+        return segmented_image, labels, centroids
+    return segmented_image
+
+def kmeans_clusteringHSV_kdtree(image, k, max_iterations=100, return_labels_centroids=False):
+    """
+    Perform K-means clustering on a 3D image in HSV space using KD-Tree.
+    """
+    hsv_image = plt.colors.rgb_to_hsv(image / 255.0)  # Normalize to [0, 1] for conversion
+    reshaped_image = hsv_image.reshape(-1, 3)
+    centroids = init_centroids(k)
+
+    for _ in range(max_iterations):
+        labels = assign_to_centroids_kdtree(reshaped_image, centroids)
+        new_centroids = update_centroids(reshaped_image, labels, k)
+        if np.all(centroids == new_centroids):
+            break
+        centroids = new_centroids
+
+    labels_2d = labels.reshape(image.shape[0], image.shape[1])
+    segmented_image = np.zeros_like(hsv_image)
+    for i in range(k):
+        segmented_image[labels_2d == i] = centroids[i]
+
+    if return_labels_centroids:
+        return segmented_image, labels, centroids
+    return segmented_image
+
+def kmeans_clusteringGrayscale_kdtree(image, k, max_iterations=100, return_labels_centroids=False):
+    """
+    Perform K-means clustering on a grayscale image using KD-Tree.
+
+    Parameters:
+    - image: 2D numpy array representing the grayscale image.
+    - k: Number of clusters.
+    - max_iterations: Maximum number of iterations for convergence.
+
+    Returns:
+    - segmented_image: 2D numpy array with clustered pixel values.
+    - (optional) labels: 1D array of cluster assignments.
+    - (optional) centroids: 1D array of centroid values.
+    """
+    reshaped_image = image.reshape(-1, 1)
+    centroids = init_centroids(k)
+
+    for _ in range(max_iterations):
+        labels = assign_to_centroids_kdtree(reshaped_image, centroids)
+        new_centroids = update_centroids(reshaped_image, labels, k)
+        if np.all(centroids == new_centroids):
+            break
+        centroids = new_centroids
+
+    labels_2d = labels.reshape(image.shape[0], image.shape[1])
+    segmented_image = np.zeros_like(image)
+    for i in range(k):
+        segmented_image[labels_2d == i] = centroids[i]
+
+    if return_labels_centroids:
+        return segmented_image, labels, centroids
+    return segmented_image
+
+def elbow_method_kdtree(image, max_k=10):
+    wcss = []
+    reshaped_image = image.reshape(-1, 3)
+    for k in range(1, max_k + 1):
+        _, labels, centroids = kmeans_clusteringRGB_kdtree(image, k, return_labels_centroids=True)
+        distances = np.sum((reshaped_image - centroids[labels]) ** 2)
+        wcss.append(distances)
+    return wcss
