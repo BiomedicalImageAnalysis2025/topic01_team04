@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 import numpy as np
 
-def sklearn(image_array, n_clusters=2):
+def skcluster_image(image_array, n_clusters=2):
     """
     Führt KMeans-Clustering auf einem Bild durch.
 
