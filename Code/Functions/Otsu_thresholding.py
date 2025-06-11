@@ -2,6 +2,10 @@
 
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+
 def otsu_thresholding(grayscale_image):
     """
     Apply Otsu's thresholding method to an grayscale image.
@@ -69,15 +73,8 @@ def display_images(original, name="Image"):
     plt.show()
 
 
-    def save_image(img, name, ext="png"):
-    """
-    Speichert ein NumPy-Bildarray `img` in den Downloads-Ordner.
-    
-    - `name`: Basis-Name der Datei (ohne Extension)
-    - `ext`: gewünschte Dateiendung, z.B. "png", "jpg", "tif" (default: "png")
-    
-    Matplotlib/Pillow erkennt aus der Extension automatisch das Format.
-    """
+def save_image(img, name, ext="png"):
+
     # 1) Pfad zum Download-Ordner (Windows, macOS, Linux)
     downloads = os.path.join(os.path.expanduser("~"), "Downloads")
     # 2) kompletten Dateinamen zusammenbauen
