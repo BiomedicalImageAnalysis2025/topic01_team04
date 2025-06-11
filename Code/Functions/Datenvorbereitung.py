@@ -10,11 +10,11 @@ import os
 
 def apply_gaussian_filter(input_path, kernel_size=5):
     """
-    Wende Gauß-Filter auf ein Bild an und zeige es in Jupyter an
+    Wendet einen Gauß-Filter auf ein Bild und gibt es zurück
     
     Parameter:
     input_path (str): Pfad zum Eingangsbild
-    kernel_size (int): Größe des Filterkerns (muss ungerade sein)
+    kernel_size (int): Größe des Kernels (muss ungerade sein)
     """
     # Bild im RGB-Format laden
     image = cv2.imread(input_path)
@@ -75,7 +75,7 @@ def save_image(img, name, ext="png"):
     """
     Speichert ein NumPy-Bildarray `img` in den Downloads-Ordner.
     
-    - `name`: Basis-Name der Datei (ohne Extension)
+    - `name`: Basis-Name der Datei 
     - `ext`: gewünschte Dateiendung, z.B. "png", "jpg", "tif" (default: "png")
     
     Matplotlib/Pillow erkennt aus der Extension automatisch das Format.
@@ -96,7 +96,7 @@ def save_image(img, name, ext="png"):
 
 
 def display_images(original, name="Image"):
-    """Zeige Originalbild in Jupyter an"""
+    """Zeige Originalbild an"""
 
     plt.figure(figsize=(7, 7))
     plt.imshow(original)
@@ -194,13 +194,13 @@ def norm_255(image: np.ndarray) -> np.ndarray:
         raise ValueError("RGB image expected with shape (H, W, 3)")
     
     # Neue Kopie im float32-Format erstellen
-    normalized_img = image.astype(np.float32)
+    normalized_img = image.astype(np.float32) # Konvertierung in float32
     
-    # Werte [0,255] auf [0,1] skalieren
-    normalized_img /= 255.0
+    # Werte [0,255] auf [0,1] skalieren 
+    normalized_img /= 255.0 # Normalisierung auf [0,1]
     
-    # Optional: Werte außerhalb [0,1] abschneiden
-    normalized_img = np.clip(normalized_img, 0.0, 1.0)
+    # Optional falls vorhanden: Werte außerhalb [0,1] abschneiden
+    normalized_img = np.clip(normalized_img, 0.0, 1.0) 
     
     return normalized_img
 
@@ -218,26 +218,25 @@ def z_normalize(rgb_image: np.ndarray) -> np.ndarray:
     if rgb_image.ndim != 3 or rgb_image.shape[2] != 3:
         raise ValueError("Eingabebild muss die Form (H, W, 3) haben (RGB).")
 
-    # ✅ Bild in float32 konvertieren (wie vorher)
+    # Bild in float32 konvertieren 
     img_float = rgb_image.astype(np.float32, copy=True)
 
-    # ✅ Pixelmatrix (H*W, 3)
-    flat = img_float.reshape(-1, 3)
+    # Pixelmatrix (H*W, 3)
+    flat = img_float.reshape(-1, 3) 
 
-    # ✅ Mittelwert und Standardabweichung berechnen
-    means = flat.mean(axis=0)
-    stds  = flat.std(axis=0, ddof=0)
-
-    # ✅ NEU: Schutz gegen Division durch 0
+    # Mittelwert und Standardabweichung berechnen
+    means = flat.mean(axis=0) # Mittelwert für jeden Kanal
+    stds  = flat.std(axis=0, ddof=0) # Standardabweichung für jeden Kanal
+    # "Schutz" gegen Division durch 0
     # Hier ersetzen wir std == 0 durch 1 → verhindert division durch 0
     safe_stds = np.where(stds == 0, 1.0, stds)  
 
-    # ✅ Umformen für Broadcasting
-    means_reshaped = means.reshape((1, 1, 3))
-    stds_reshaped  = safe_stds.reshape((1, 1, 3))  # ⬅️ jetzt safe_stds statt stds
+    # Umformen für Broadcasting
+    means_reshaped = means.reshape((1, 1, 3)) 
+    stds_reshaped  = safe_stds.reshape((1, 1, 3))  # jetzt safe_stds statt stds
 
     # ✅ Z-Transformation mit geschützten Standardabweichungen
-    z_image = (img_float - means_reshaped) / stds_reshaped  # ⬅️ Division durch safe_stds
+    z_image = (img_float - means_reshaped) / stds_reshaped  # Division durch safe_stds
 
     return z_image
 
@@ -248,10 +247,9 @@ def z_normalize(rgb_image: np.ndarray) -> np.ndarray:
 
 def save_as_numpy(array: np.ndarray, name: str):
     """
-    Speichert ein beliebiges NumPy-Array im Downloads-Ordner des aktuellen Nutzers.
+    Speichert ein beliebiges NumPy-Array im Downloads-Ordner.
     Der Dateiname wird aus dem übergebenen `name` gebildet (mit .npy-Endung).
     Beispiel-Aufruf im Main-Code:
-        save_as_numpy(z_YeastCells, "Z_YeastCells")
 
     Parameter:
     -----------
@@ -280,7 +278,7 @@ def save_as_numpy(array: np.ndarray, name: str):
     # 5) Array verlustfrei als .npy speichern
     np.save(output_path, array)
     
-    print(f"✅ Array erfolgreich gespeichert: {output_path}")
+    print(f"Array erfolgreich gespeichert: {output_path}")
     return output_path
 
 
@@ -289,7 +287,7 @@ def save_as_numpy(array: np.ndarray, name: str):
 
 def apply_gaussian_to_array(image_array, kernel_size=5):
     """
-    Wendet einen Gauß-Filter auf einen Array an (z. B. z-transformiert).
+    Wendet einen Gauß-Filter auf einen Array an.
     
     Parameter:
     image_array (np.ndarray): np Array 
@@ -303,7 +301,7 @@ def apply_gaussian_to_array(image_array, kernel_size=5):
 
     # OpenCV erwartet float32, falls das Bild float64 ist
     if image_array.dtype != np.float32:
-        image_array = image_array.astype(np.float32)
+        image_array = image_array.astype(np.float32) # float32 hat weniger Dezimalstellen = weniger Speicherverbrauch
 
     blurred = cv2.GaussianBlur(image_array, (kernel_size, kernel_size), 0)
     return blurred
@@ -315,12 +313,12 @@ def apply_median_filter(image, kernel=3):
     Wendet einen Medianfilter auf das gegebene Bild an.
 
     Parameter:
-    - image: np.ndarray, das Eingabebild (z. B. HSV oder RGB)
+    - image: np.ndarray, das Eingabebild (z.B. HSV oder RGB)
     - kernel: int, die Größe des Median-Kernels (muss ungerade sein)
 
     """
     if kernel % 2 == 0 or kernel < 1:
-        raise ValueError("Kernelgröße muss eine ungerade positive Zahl sein (z. B. 3, 5, 7).")
+        raise ValueError("Kernelgröße muss eine ungerade positive Zahl sein (z.B. 3, 5, 7).")
     
     filtered = cv2.medianBlur(image, kernel)
     return filtered
