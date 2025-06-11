@@ -67,7 +67,7 @@ def display_images(original, name="Image"):
     """Zeige Originalbild in Jupyter an"""
 
     plt.figure(figsize=(6, 6))
-    plt.imshow(original)
+    plt.imshow(original, cmap='gray')
     plt.title(name)
     plt.axis('off')
     plt.show()
