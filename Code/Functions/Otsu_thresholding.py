@@ -57,3 +57,34 @@ def rgb_to_grayscale(image):
         raise ValueError("Input image must be an RGB image.")
     
     return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+
+def display_images(original, name="Image"):
+    """Zeige Originalbild in Jupyter an"""
+
+    plt.figure(figsize=(6, 6))
+    plt.imshow(original)
+    plt.title(name)
+    plt.axis('off')
+    plt.show()
+
+
+    def save_image(img, name, ext="png"):
+    """
+    Speichert ein NumPy-Bildarray `img` in den Downloads-Ordner.
+    
+    - `name`: Basis-Name der Datei (ohne Extension)
+    - `ext`: gewünschte Dateiendung, z.B. "png", "jpg", "tif" (default: "png")
+    
+    Matplotlib/Pillow erkennt aus der Extension automatisch das Format.
+    """
+    # 1) Pfad zum Download-Ordner (Windows, macOS, Linux)
+    downloads = os.path.join(os.path.expanduser("~"), "Downloads")
+    # 2) kompletten Dateinamen zusammenbauen
+    filename = f"{name}.{ext.lstrip('.')}"
+    output_path = os.path.join(downloads, filename)
+    # 3) sicherstellen, dass es den Ordner gibt
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    # 4) speichern
+    plt.imsave(output_path, img)
+    print(f"Image saved to: {output_path}")
