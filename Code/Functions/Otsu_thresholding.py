@@ -73,7 +73,7 @@ def display_images(original, name="Image"):
     plt.show()
 
 
-def save_image(img, name, ext="png"):
+def save_image(img, name, ext="tif"):
 
     # 1) Pfad zum Download-Ordner (Windows, macOS, Linux)
     downloads = os.path.join(os.path.expanduser("~"), "Downloads")
