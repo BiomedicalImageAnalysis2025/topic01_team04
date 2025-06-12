@@ -83,5 +83,12 @@ def save_image(img, name, ext="tif"):
     # 3) sicherstellen, dass es den Ordner gibt
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     # 4) speichern
-    plt.imsave(output_path, img)
-    print(f"Image saved to: {output_path}")
+    success = cv2.imwrite(output_path, img)
+    if success:
+        print(f"Bild gespeichert unter: {output_path}")
+    else:
+        print(f"❌ Fehler beim Speichern von: {output_path}")
+
+
+
+
