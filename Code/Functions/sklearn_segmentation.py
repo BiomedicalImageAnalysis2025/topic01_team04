@@ -44,10 +44,6 @@ def skcluster_image(image_array, n_clusters=2):
 
 
 
-import numpy as np
-import matplotlib.pyplot as plt
-import os
-
 def save_image(img, name, ext="tiff"):
 
     # 1) Pfad zum Download-Ordner (Windows, macOS, Linux)
@@ -63,6 +59,9 @@ def save_image(img, name, ext="tiff"):
         print(f"Bild gespeichert unter: {output_path}")
     else:
         print(f"❌ Fehler beim Speichern von: {output_path}")
+
+
+
 
 
 
