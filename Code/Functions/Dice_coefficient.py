@@ -11,15 +11,19 @@ def dice_coefficient(y_true, y_pred, smooth=1.0):
     Compute the Dice coefficient between two binary masks.
     
     Args:
-        y_true (np.ndarray): Ground truth binary mask.
-        y_pred (np.ndarray): Predicted binary mask.
+        y_true (np.ndarray): Ground truth mask (can be grayscale or binary).
+        y_pred (np.ndarray): Predicted mask (can be grayscale or binary).
         smooth (float): Smoothing factor to avoid division by zero.
         
     Returns:
         float: Dice coefficient value.
     """
-    y_true_f = y_true.flatten()
-    y_pred_f = y_pred.flatten()
+    # Binarize inputs: alles größer 0 wird zu 1, sonst 0
+    y_true_bin = (y_true > 0).astype(np.uint8)
+    y_pred_bin = (y_pred > 0).astype(np.uint8)
+    
+    y_true_f = y_true_bin.flatten()
+    y_pred_f = y_pred_bin.flatten()
     
     intersection = np.sum(y_true_f * y_pred_f)
     
@@ -29,7 +33,8 @@ def dice_coefficient(y_true, y_pred, smooth=1.0):
 
 
 
-# Default mappings for segmentation methods
+
+# Default mappings for segmentation methods - Which segmentation file belongs to which ground truth file?
 def get_default_maps():
     return {
         "Otsu": {
@@ -62,13 +67,13 @@ def evaluate_segmentation(base_dir: str,
     """
     
 
-    # Ground truth folder is fixed
+    # Ground truth folder is fixed - it was already given
     gt_folder = os.path.join(base_dir, "Original_Images", "Otsu", "Data", "N2DL-HeLa", "gt")
     results = []
 
     for method, folder in method_paths.items():
         file_map = mappings.get(method, {})
-        for seg_name, gt_name in file_map.items():
+        for seg_name, gt_name in file_map.items(): #Go through each segmentation image and the corresponding ground truth
             seg_path = os.path.join(folder, seg_name)
             gt_path = os.path.join(gt_folder, gt_name)
 
@@ -110,7 +115,7 @@ def plot_dice_scores(df: pd.DataFrame,
     plt.figure(figsize=(10, 5))
     ax = sns.barplot(data=df, x=x, y=y, hue=hue, edgecolor="black", linewidth=1.2)
     ax.yaxis.grid(True)
-    ax.xaxis.grid(False)
+    ax.xaxis.grid(False) 
 
     for p in ax.patches:
         height = p.get_height()
