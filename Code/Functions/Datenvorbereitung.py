@@ -31,7 +31,7 @@ def apply_gaussian_filter(input_path, kernel_size=5):
         kernel_size += 1
     blurred = cv2.GaussianBlur(image_rgb, (kernel_size, kernel_size), 0)
     
-    return image_rgb, blurred
+    return  blurred
 
 
 
@@ -52,9 +52,11 @@ def apply_bilateral_filter(input_path, kernel_size=5,
       Tuple (original_rgb, filtered_rgb)
     """
     image = cv2.imread(input_path)
+
     if image is None:
         print(f"Fehler: Bild konnte nicht geladen werden: {input_path}")
         return None
+    
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     if kernel_size % 2 == 0:
         kernel_size += 1
@@ -65,7 +67,7 @@ def apply_bilateral_filter(input_path, kernel_size=5,
         sigmaColor=sigma_color,
         sigmaSpace=sigma_space
     )
-    return image_rgb, filtered
+    return filtered
 
 
 
@@ -88,8 +90,31 @@ def save_image(img, name, ext="png"):
     # 3) sicherstellen, dass es den Ordner gibt
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     # 4) speichern
-    plt.imsave(output_path, img)
+    if img.ndim == 2:
+        plt.imsave(output_path, img, cmap='gray')
+    else:
+        plt.imsave(output_path, img)
     print(f"Image saved to: {output_path}")
+
+    
+def save_image_grey(img, name, ext="png"):
+    """
+    Speichert ein Graustufenbild (2D) im uint8-Format ohne zusätzliche Normalisierung.
+    """
+    downloads = os.path.join(os.path.expanduser("~"), "Downloads")
+    filename = f"{name}.{ext.lstrip('.')}"
+    output_path = os.path.join(downloads, filename)
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+    
+    if img.dtype != np.uint8:
+        img = np.clip(img, 0, 255).astype(np.uint8)
+
+    cv2.imwrite(output_path, img)
+    print(f"Image saved to: {output_path}")
+    
+
+
 
 
 
@@ -104,6 +129,14 @@ def display_images(original, name="Image"):
     plt.axis('off')
     plt.show()
 
+def display_images_grey(original, name="Image"):
+    """Zeige Originalbild an"""
+
+    plt.figure(figsize=(7, 7))
+    plt.imshow(original, cmap='gray')
+    plt.title(name)
+    plt.axis('off')
+    plt.show()
 
 
 
@@ -288,23 +321,45 @@ def save_as_numpy(array: np.ndarray, name: str):
 def apply_gaussian_to_array(image_array, kernel_size=5):
     """
     Wendet einen Gauß-Filter auf einen Array an.
-    
-    Parameter:
-    image_array (np.ndarray): np Array 
-    kernel_size (int): Größe des Filters (muss ungerade sein)
-    
-    Rückgabe:
-    np.ndarray: Geglättetes Bild
+
+    Rückgabe: uint8-Array (0–255)
     """
     if kernel_size % 2 == 0:
         kernel_size += 1
 
-    # OpenCV erwartet float32, falls das Bild float64 ist
+    # Umwandlung in float32 für Filter
     if image_array.dtype != np.float32:
-        image_array = image_array.astype(np.float32) # float32 hat weniger Dezimalstellen = weniger Speicherverbrauch
+        image_array = image_array.astype(np.float32)
 
     blurred = cv2.GaussianBlur(image_array, (kernel_size, kernel_size), 0)
+
+    # Rückwandlung in uint8 für einheitliche Weiterverarbeitung
+    blurred = np.clip(blurred, 0, 255).astype(np.uint8)
     return blurred
+
+
+
+
+def apply_bilateral_to_array(image_array, kernel_size=5, sigma_color=75, sigma_space=75):
+    """
+    Wendet einen bilateralen Filter auf ein Array an.
+
+    Rückgabe: uint8-Array (0–255)
+    """
+    if kernel_size % 2 == 0:
+        kernel_size += 1
+
+    # Bilateral braucht uint8
+    if image_array.dtype != np.uint8:
+        image_array = np.clip(image_array, 0, 255).astype(np.uint8)
+
+    filtered = cv2.bilateralFilter(
+        src=image_array,
+        d=kernel_size,
+        sigmaColor=sigma_color,
+        sigmaSpace=sigma_space
+    )
+    return filtered
 
 
 
