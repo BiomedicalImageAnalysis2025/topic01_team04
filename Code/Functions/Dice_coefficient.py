@@ -189,6 +189,8 @@ def evaluate_and_plot_dice(image_pairs, title="Dice Score Vergleich"):
     plt.tight_layout()
     plt.show()
 
+    
     return df
+
 
 
