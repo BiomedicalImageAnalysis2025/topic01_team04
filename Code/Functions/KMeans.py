@@ -18,9 +18,9 @@ def split_channels(img_array):
 
 
 # Function to pick random centroids for K-Means clustering (range 0-1 --> normalized data)
-def init_centroids(k):
+def init_centroids(k, dim=3):
     
-   centroids = np.random.rand(k, 3)  # RGB-Werte zwischen 0 und 1
+   centroids = np.random.rand(k, dim)  # RGB-Werte zwischen 0 und 1
    return centroids
 
 
@@ -162,7 +162,7 @@ def kmeans_clusteringHSV(image, k, max_iterations=100, return_labels_centroids=F
     reshaped_image = hsv_image.reshape(-1, 3)
 
     # Initialize centroids
-    centroids = init_centroids(k)
+    centroids = init_centroids(k, dim=1)
 
     for _ in range(max_iterations):
         # Assign pixels to the nearest centroid
@@ -208,7 +208,7 @@ def kmeans_clusteringGrayscale(image, k, max_iterations=100, return_labels_centr
     reshaped_image = image.reshape(-1, 1)
 
     # Initialize centroids
-    centroids = init_centroids(k)
+    centroids = init_centroids(k, dim=1)
 
     for _ in range(max_iterations):
         # Assign pixels to the nearest centroid
@@ -315,7 +315,7 @@ def assign_to_centroids_kdtree(pixels, centroids):
     """
     from scipy.spatial import KDTree as KDTree
     tree = KDTree(centroids)
-    distances, labels = tree.query(pixels)
+    distances, labels = tree.query(pixels,workers = -1)
     return labels
 
 def kmeans_clusteringRGB_kdtree(image, k, max_iterations=100, return_labels_centroids=False):
