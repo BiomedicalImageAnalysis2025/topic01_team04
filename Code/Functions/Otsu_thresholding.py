@@ -34,10 +34,9 @@ def plot_histogram(grayscale_image):
     image (numpy.ndarray): Input grayscale image.
     """
     # Calculate histogram
-    hist = cv2.calcHist([image], [0], None, [256], [0, 256])
+    hist = cv2.calcHist([grayscale_image], [0], None, [256], [0, 256])
     
     # Plot histogram
-    import matplotlib.pyplot as plt
     plt.figure(figsize=(10, 5))
     plt.title("Grayscale Histogram")
     plt.xlabel("Pixel Intensity")
@@ -64,7 +63,7 @@ def rgb_to_grayscale(image):
 
 
 def display_images(original, name="Image"):
-    """Zeige Originalbild in Jupyter an"""
+    """show original image"""
 
     plt.figure(figsize=(6, 6))
     plt.imshow(original, cmap='gray', vmin=0, vmax=255) 

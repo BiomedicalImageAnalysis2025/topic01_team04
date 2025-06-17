@@ -128,3 +128,53 @@ def save_image(img, name, ext="png"):
     # 4) speichern
     plt.imsave(output_path, img)
     print(f"Image saved to: {output_path}")
+
+
+def plot_histogram(image, title="Histogram", xlabel="Pixel Intensity", ylabel="Frequency"):
+    """
+    Plot the histogram of the image.
+    
+    Parameters:
+    image (numpy.ndarray): Input image.
+    title (str): Title of the histogram plot.
+    xlabel (str): Label for the x-axis.
+    ylabel (str): Label for the y-axis.
+    """
+    hist = cv2.calcHist([image], [0], None, [256], [0, 256])
+    
+    plt.figure(figsize=(10, 5))
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.plot(hist)
+    plt.xlim([0, 256])
+    plt.show()
+
+    
+def plot_hsv_histograms(hsv_image):
+    """
+    Zeigt die Histogramme der drei HSV-Kanäle eines HSV-Bildes.
+    
+    Parameter:
+    - hsv_image: numpy.ndarray (HSV-Farbbild)
+    """
+    h, s, v = cv2.split(hsv_image)
+    channels = [h, s, v]
+    titles = ['Hue', 'Saturation', 'Value']
+    colors = ['r', 'g', 'b']
+    
+    plt.figure(figsize=(15, 4))
+    for i in range(3):
+        hist = cv2.calcHist([channels[i]], [0], None, [256], [0, 256])
+        plt.subplot(1, 3, i+1)
+        plt.plot(hist, color=colors[i])
+        plt.title(f"Histogramm – {titles[i]}")
+        plt.xlabel("Intensitätswert")
+        plt.ylabel("Pixelanzahl")
+        plt.xlim([0, 256])
+        plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+
+
