@@ -377,3 +377,46 @@ def apply_median_filter(image, kernel=3):
     
     filtered = cv2.medianBlur(image, kernel)
     return filtered
+
+
+
+def apply_gauß_to_string(image: np.ndarray, kernel_size: int) -> np.ndarray:
+    """
+    Wendet einen Gauß-Filter mit gegebener Kernel-Größe auf ein Bild an.
+    
+
+    Rückgabe:
+    - Gefiltertes Bild als NumPy-Array
+    """
+    if kernel_size % 2 == 0:
+
+
+        raise ValueError("Kernel-Größe muss ungerade sein (z. B. 3, 5, 7).")
+
+    return cv2.GaussianBlur(image, (kernel_size, kernel_size), sigmaX=0)
+
+
+
+
+def apply_bilateral_to_string(image: np.ndarray, kernel_size: int, sigma_color: float = 75, sigma_space: float = 75) -> np.ndarray:
+    """
+    Wendet einen bilateralen Filter mit gegebener Kernel-Größe auf ein Bild an.
+
+    Parameter:
+    - image: Eingabebild als NumPy-Array (z.B. Hue-Kanal, RGB, etc.)
+    - kernel_size: Durchmesser des Pixel-Nachbarschaftsbereichs (muss ungerade sein)
+    - sigma_color: Filterstärke für Farbunterschiede (Standard 75)
+    - sigma_space: Filterstärke für räumliche Nähe (Standard 75)
+
+    Rückgabe:
+    - Gefiltertes Bild als NumPy-Array
+    """
+
+    if kernel_size % 2 == 0 or kernel_size <= 0:
+        raise ValueError("Kernel-Größe muss eine positive ungerade Zahl sein")
+
+    # d in bilateralFilter ist der Durchmesser der Nachbarschaft
+    filtered_image = cv2.bilateralFilter(image, d=kernel_size, sigmaColor=sigma_color, sigmaSpace=sigma_space)
+    
+    return filtered_image
+

@@ -342,7 +342,7 @@ def kmeans_clusteringHSV_kdtree(image, k, max_iterations=100, return_labels_cent
     """
     Perform K-means clustering on a 3D image in HSV space using KD-Tree.
     """
-    hsv_image = plt.colors.rgb_to_hsv(image / 255.0)  # Normalize to [0, 1] for conversion
+    #hsv_image = plt.colors.rgb_to_hsv(image / 255.0)  # Normalize to [0, 1] for conversion
     reshaped_image = hsv_image.reshape(-1, 3)
     centroids = init_centroids(k)
 
