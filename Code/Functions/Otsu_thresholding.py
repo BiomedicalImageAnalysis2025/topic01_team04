@@ -65,7 +65,7 @@ def rgb_to_grayscale(image):
 def display_images(original, name="Image"):
     """show original image"""
 
-    plt.figure(figsize=(6, 6))
+    plt.figure(figsize=(4, 4))
     plt.imshow(original, cmap='gray', vmin=0, vmax=255) 
     plt.title(name)
     plt.axis('off')
