@@ -5,19 +5,15 @@ import os
 
 def rgb_to_hsv(image):
     """
-    Konvertiert ein RGB-Bild (numpy array) in den HSV-Farbraum.
+    Converts an RGB image (numpy array) to the HSV
     
-    Parameter:
-    image (numpy.ndarray): Eingabebild im RGB-Format
+    Parameters:
+    image (numpy.ndarray):  Input RGB image (as a numpy array).
     
-    Rückgabe:
-    image_hsv (numpy.ndarray): Bild im HSV-Farbraum
+    Returns:
+    image_hsv (numpy.ndarray): Converted HSV image
     """
-    if image is None:
-        print("Fehler: Bild ist None.")
-        return None
-
-    # Konvertierung von RGB (matplotlib) zu HSV (OpenCV erwartet BGR, daher zuerst RGB->BGR)
+    # convert RGB (matplotlib) to HSV (OpenCV expects BGR, so first convert RGB->BGR)
     image_bgr = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     image_hsv = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)
     return image_hsv
@@ -49,8 +45,10 @@ def saturation_channel(hsv_image):
 
 def value_channel(hsv_image):
     """ Extract the Value channel from the HSV image.
+
     Parameters:
     hsv_image (numpy.ndarray): Input HSV image.
+
     Returns:
     numpy.ndarray: Value channel.
     """
@@ -100,9 +98,9 @@ def save_hsv_channels(hsv_image, output_prefix):
 
 
 def display_images(original, name="Image"):
-    """Zeige Originalbild in Jupyter an"""
+    """show original image"""
 
-    plt.figure(figsize=(6, 6))
+    plt.figure(figsize=(4, 4))
     plt.imshow(original)
     plt.title(name)
     plt.axis('off')
@@ -111,21 +109,17 @@ def display_images(original, name="Image"):
 
 def save_image(img, name, ext="png"):
     """
-    Speichert ein NumPy-Bildarray `img` in den Downloads-Ordner.
+    Save an image to the Downloads folder with a specified name and extension.
     
-    - `name`: Basis-Name der Datei (ohne Extension)
-    - `ext`: gewünschte Dateiendung, z.B. "png", "jpg", "tif" (default: "png")
+    - `name`:  Name of the image file (without extension).
+    - `ext`:   File extension (e.g., 'png', 'jpg', 'tiff'). Default is 'png'.
     
-    Matplotlib/Pillow erkennt aus der Extension automatisch das Format.
+    Matplotlib/Pillow  is used to save the image, which supports various formats.
     """
-    # 1) Pfad zum Download-Ordner (Windows, macOS, Linux)
     downloads = os.path.join(os.path.expanduser("~"), "Downloads")
-    # 2) kompletten Dateinamen zusammenbauen
     filename = f"{name}.{ext.lstrip('.')}"
     output_path = os.path.join(downloads, filename)
-    # 3) sicherstellen, dass es den Ordner gibt
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    # 4) speichern
     plt.imsave(output_path, img)
     print(f"Image saved to: {output_path}")
 
@@ -150,13 +144,13 @@ def plot_histogram(image, title="Histogram", xlabel="Pixel Intensity", ylabel="F
     plt.xlim([0, 256])
     plt.show()
 
-    
+
 def plot_hsv_histograms(hsv_image):
     """
-    Zeigt die Histogramme der drei HSV-Kanäle eines HSV-Bildes.
+    show the histograms of the Hue, Saturation, and Value channels of an HSV image.
     
-    Parameter:
-    - hsv_image: numpy.ndarray (HSV-Farbbild)
+    Parameters:
+    - hsv_image: numpy.ndarray 
     """
     h, s, v = cv2.split(hsv_image)
     channels = [h, s, v]
@@ -168,13 +162,14 @@ def plot_hsv_histograms(hsv_image):
         hist = cv2.calcHist([channels[i]], [0], None, [256], [0, 256])
         plt.subplot(1, 3, i+1)
         plt.plot(hist, color=colors[i])
-        plt.title(f"Histogramm – {titles[i]}")
-        plt.xlabel("Intensitätswert")
-        plt.ylabel("Pixelanzahl")
+        plt.title(f"Histogram – {titles[i]}")
+        plt.xlabel("Pixel Intensity")
+        plt.ylabel("Frequency")
         plt.xlim([0, 256])
         plt.grid(True)
     plt.tight_layout()
     plt.show()
 
+def np.save("image_hsv.npy", image_hsv)
 
 
