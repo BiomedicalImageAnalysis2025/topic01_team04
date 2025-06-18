@@ -98,6 +98,15 @@ def evaluate_segmentation(base_dir: str,
 
     return pd.DataFrame(results)
 
+
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+import cv2
+import os
+
+# === Funktion zum Plotten der Dice Scores ===
 def plot_dice_scores(df: pd.DataFrame,
                      x: str = 'Datei',
                      y: str = 'DiceScore',
@@ -115,7 +124,7 @@ def plot_dice_scores(df: pd.DataFrame,
     plt.figure(figsize=(10, 5))
     ax = sns.barplot(data=df, x=x, y=y, hue=hue, edgecolor="black", linewidth=1.2)
     ax.yaxis.grid(True)
-    ax.xaxis.grid(False) 
+    ax.xaxis.grid(False)
 
     for p in ax.patches:
         height = p.get_height()
@@ -134,3 +143,54 @@ def plot_dice_scores(df: pd.DataFrame,
     ax.set_title("Dice Score per Image and Method")
     plt.tight_layout()
     plt.show()
+
+
+# Functions/evaluate_dice.py
+
+def evaluate_and_plot_dice(image_pairs, title="Dice Score Vergleich"):
+    sns.set_theme(style="whitegrid")
+    results = []
+
+    for pred_path, gt_path in image_pairs:
+        y_pred = np.copy(plt.imread(pred_path))
+        y_true = np.copy(plt.imread(gt_path))
+
+        if y_pred.ndim == 3:
+            y_pred = np.dot(y_pred[..., :3], [0.2989, 0.5870, 0.1140])
+        if y_true.ndim == 3:
+            y_true = np.dot(y_true[..., :3], [0.2989, 0.5870, 0.1140])
+
+        y_pred_bin = (y_pred > 0).astype(np.uint8)
+        y_true_bin = (y_true > 0).astype(np.uint8)
+
+        if y_pred_bin.shape != y_true_bin.shape:
+            y_true_bin = cv2.resize(y_true_bin, (y_pred_bin.shape[1], y_pred_bin.shape[0]), interpolation=cv2.INTER_NEAREST)
+
+        score = dice_coefficient(y_true_bin, y_pred_bin)
+        short_name = os.path.basename(pred_path)
+        results.append({'Bild': short_name, 'DiceScore': score})
+
+    df = pd.DataFrame(results)
+    print(df)
+
+    plt.figure(figsize=(10, 6))
+    barplot = sns.barplot(data=df, x='Bild', y='DiceScore', width=0.4, color='skyblue')
+
+    for p in barplot.patches:
+        barplot.annotate(f'{p.get_height():.2f}',
+                         (p.get_x() + p.get_width() / 2, p.get_height()),
+                         ha='center', va='bottom', fontsize=10)
+
+    plt.xticks(rotation=30, ha='right')
+    plt.ylim(0, 1)
+    plt.ylabel("Dice Score", fontsize=12)
+    plt.xlabel("Bild", fontsize=12)
+    plt.title(title, fontsize=14)
+    plt.tight_layout()
+    plt.show()
+
+    
+    return df
+
+
+
