@@ -170,6 +170,5 @@ def plot_hsv_histograms(hsv_image):
     plt.tight_layout()
     plt.show()
 
-def np.save("image_hsv.npy", image_hsv)
 
 
