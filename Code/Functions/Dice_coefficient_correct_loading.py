@@ -135,7 +135,8 @@ def evaluate_and_plot_dice_cells(image_pairs, title="Dice Score Vergleich"):
     n_bars = len(df)
     colors = sns.color_palette("hsv", n_bars)  # unterschiedliche Farben pro Balken
 
-    barplot = sns.barplot(data=df, x='Bild', y='DiceScore', palette=colors, edgecolor='black')
+    barplot = sns.barplot(data=df, x='Bild', y='DiceScore', hue='Bild', palette=colors, edgecolor='black', legend=False)
+
     for p in barplot.patches:
         barplot.annotate(f'{p.get_height():.3f}',
                          (p.get_x() + p.get_width() / 2, p.get_height()),
