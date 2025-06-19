@@ -1,3 +1,9 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import os # To save images
+from matplotlib import colors # To convert image models
+
+
 # K-Means Clustering für Bildsegmentierung in RGB, HSV und Grayscale
 # Modular implementiert mit init_centroids, assign_to_centroids, update_centroids
 
@@ -116,6 +122,12 @@ def kmeans(data, k, max_iters=100, tol=1e-4, init_method='kmeans++', space='rgb'
     #Normalize data
     data = np.copy(data.astype(float))
     data = (data - data.min()) / (data.max() - data.min())
+
+    #Drop alpha channel if present
+    if data.ndim == 3 and data.shape[2] == 4:
+        data = data[..., :3]
+    else:
+        data = data
     
     img = preprocess_image(data, space=space)
     data_shape = data.shape
@@ -158,3 +170,42 @@ def reconstruct_segmented_image(centroids, labels, data_shape, space):
         segmented_image = segmented_flat.reshape(data_shape[0], data_shape[1], 1)
       
     return segmented_image
+
+
+#Save image
+def save_image(image, path):
+    """
+    Speichert ein Bild (numpy array) im angegebenen Pfad.
+    """
+    # Erstelle den Ordner, falls er nicht existiert
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    plt.imsave(path, image)
+
+#Save image of different color models (RGB, HSV, Grayscale)
+def save_image_universal(image, path, space='rgb'):
+    """
+    Speichert ein Bild je nach Farbraum (RGB, HSV, Grayscale) am angegebenen Pfad.
+    - image: numpy array
+    - path: Speicherpfad (inkl. Dateiname)
+    - space: 'rgb', 'hsv' oder 'gray'
+    """
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    img = np.copy(image)
+    if space == 'hsv':
+        # HSV zu RGB konvertieren
+        #if img.max() > 1.0:
+         #   img = img / 255.0
+        #img = colors.hsv_to_rgb(img)  #Umwandlung bereits in reconstruct_segmented_image durchgeführt
+        plt.imsave(path, img)
+    elif space == 'rgb':
+        if img.max() > 1.0:
+            img = img / 255.0
+        plt.imsave(path, img)
+    elif space == 'gray':
+        if img.max() > 1.0:
+            img = img / 255.0
+        # Falls das Bild shape (H, W, 1) hat, squeeze auf (H, W)
+        if img.ndim == 3 and img.shape[2] == 1:
+            img = img.squeeze(axis=2)
+        plt.imsave(path, img, cmap='gray')
+ 
