@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from PIL import Image
 
 # === Dice-Koeffizient berechnen ===
 def dice_coefficient(y_true, y_pred, smooth=1.0):
@@ -159,7 +160,7 @@ def binarize_image(img, method='threshold', threshold=128):
 
     return df
 
-
+import pandas as pd
 def evaluate_and_plot_dice(image_pairs, title="Dice Score Vergleich"):
     results = []
 
@@ -326,4 +327,40 @@ def evaluate_and_plot_dice_colored(image_pairs, title="Dice Score Vergleich"):
     plt.show()
 
     return df
+
+import matplotlib.pyplot as plt
+import numpy as np
+import cv2
+import os
+import pandas as pd
+import seaborn as sns
+
+def robust_image_loader(path):
+    ext = os.path.splitext(path)[-1].lower()
+    if ext in ['.tif', '.tiff']:
+        img = Image.open(path)
+        img = np.array(img)
+    else:
+        img = plt.imread(path)
+        if img.max() <= 1.0:
+            img = (img * 255).astype(np.uint8)
+        else:
+            img = img.astype(np.uint8)
+
+    if img.ndim == 2:
+        img = np.stack([img] * 3, axis=-1)
+    elif img.shape[-1] == 4:
+        img = img[:, :, :3]
+    return img
+
+
+
+
+
+
+
+
+
+
+
 
