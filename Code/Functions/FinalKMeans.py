@@ -87,7 +87,7 @@ def assign_to_centroids(data, centroids):
     Distanzmetriken: euklidisch (Lloyd, 1982).
     Returns: labels (n_samples,)
     """
-    dists = np.linalg.norm(data[:, None, :] - centroids[None, :, :], axis=2)
+    dists = np.linalg.norm(data[:, None, :] - centroids[None, :, :], axis=2)s
     return np.argmin(dists, axis=1)
 
 
