@@ -170,5 +170,3 @@ def plot_hsv_histograms(hsv_image):
     plt.tight_layout()
     plt.show()
 
-
-

@@ -368,7 +368,7 @@ def apply_median_filter(image, kernel=3):
     Wendet einen Medianfilter auf das gegebene Bild an.
 
     Parameter:
-    - image: np.ndarray, das Eingabebild (z.B. HSV oder RGB)
+    - image: np.ndarray
     - kernel: int, die Größe des Median-Kernels (muss ungerade sein)
 
     """
