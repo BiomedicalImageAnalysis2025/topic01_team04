@@ -3,7 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 import os
-
+import matplotlib.pyplot as plt
+from skimage import color, segmentation, filters, morphology, io
+from skimage.feature import peak_local_max
+from scipy import ndimage as ndi
+import imageio.v3 as iio
 
 
 
@@ -90,11 +94,11 @@ def save_image(img, name, ext="png"):
     # 3) sicherstellen, dass es den Ordner gibt
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     # 4) speichern
+    # 4) speichern
     if img.ndim == 2:
-        plt.imsave(output_path, img, cmap='gray')
+        plt.imsave(output_path, img)
     else:
         plt.imsave(output_path, img)
-    print(f"Image saved to: {output_path}")
 
     
 def save_image_grey(img, name, ext="png"):
@@ -116,14 +120,10 @@ def save_image_grey(img, name, ext="png"):
 
 
 
-
-
-
-
 def display_images(original, name="Image"):
     """Zeige Originalbild an"""
 
-    plt.figure(figsize=(7, 7))
+    plt.figure(figsize=(4, 4))
     plt.imshow(original)
     plt.title(name)
     plt.axis('off')
@@ -132,7 +132,7 @@ def display_images(original, name="Image"):
 def display_images_grey(original, name="Image"):
     """Zeige Originalbild an"""
 
-    plt.figure(figsize=(7, 7))
+    plt.figure(figsize=(4, 4))
     plt.imshow(original, cmap='gray')
     plt.title(name)
     plt.axis('off')
@@ -420,3 +420,171 @@ def apply_bilateral_to_string(image: np.ndarray, kernel_size: int, sigma_color: 
     
     return filtered_image
 
+
+def remove_alpha_channel(image):
+ 
+    if image.ndim == 3 and image.shape[2] == 4: 
+        return image[:, :, :3]  # RGBA → RGB
+    elif image.ndim == 3 and image.shape[2] == 3:
+        return image  # RGB bleibt 
+    
+
+  
+def apply_watershed(image, num_markers):
+    """
+    Wendet Wasserquellen basierte Watershed auf ein Bild an.
+
+    Rückgabe:
+        labels_ws (ndarray): Segmentiertes Bild
+    """
+    # 1. Alpha-Kanal entfernen 
+    img_rgb = np.copy(image)
+    if img_rgb.ndim == 3 and img_rgb.shape[2] == 4:
+        img_rgb = img_rgb[:, :, :3]
+    elif image.ndim == 3 and image.shape[2] == 3:
+        return image 
+
+    # 2. In Graustufen umwandeln
+    img_gray = color.rgb2gray(img_rgb) if img_rgb.ndim == 3 else img_rgb
+
+    # 3. Binärmaske erzeugen 
+    th = filters.threshold_otsu(img_gray)
+    binary = img_gray > th
+
+    # 4. Distanz-Transform 
+    distance = ndi.distance_transform_edt(binary)
+
+    # 5. Marker setzen 
+    coords = peak_local_max(
+        distance, 
+        labels=binary,
+        num_peaks=num_markers,
+        footprint=np.ones((15, 15))
+    )
+    markers = np.zeros(distance.shape, dtype=np.int32)
+    for idx, (r, c) in enumerate(coords, start=1):
+        markers[r, c] = idx
+
+    #  6. Watershed anwenden
+    labels_ws = segmentation.watershed(
+        -distance,
+        markers,
+        mask=binary
+    )
+
+    # 7. Bildanzeige 
+    # Erstes Plotfenster: Maske + Marker
+    fig1, axes = plt.subplots(1, 2, figsize=(5, 5))
+    ax1 = axes.ravel()
+    ax1[0].imshow(img_gray, cmap='gray')
+    ax1[0].contour(binary, [0.5], colors='r')
+    ax1[0].set_title('Maske')
+
+    ax1[1].imshow(distance, cmap='magma')
+    ax1[1].plot(coords[:, 1], coords[:, 0], 'b.')
+    ax1[1].set_title(f'Distanz + {num_markers} Marker')
+
+    for a in ax1:
+        a.axis('off')
+    plt.tight_layout()
+    plt.show()
+
+    # Zweites Plotfenster: Segmentierte Zellen separat
+    fig2, ax2 = plt.subplots(figsize=(5, 5))
+    ax2.imshow(color.label2rgb(labels_ws, image=img_gray, bg_label=0))
+    ax2.set_title('Segmentierte Zellen (Watershed)')
+    ax2.axis('off')
+    plt.tight_layout()
+    plt.show()
+
+    return labels_ws
+
+
+
+
+
+def apply_watershed_2(image, min_distance=60, thresh_rel=0.6):
+    """
+    Parameter:
+    
+        min_distance (int): Mindestabstand zwischen Zellkernen (Pixel).
+        thresh_rel (float): Relativer Schwellwert für Markerplatzierung (0–1).
+
+    Rückgabe:
+        labels_ws : Label-Bild mit segmentierten Zellen.
+    """
+    # 1. Alpha-Kanal entfernen + Graustufen 
+    img = np.copy(image)
+    if img.ndim == 3 and img.shape[2] == 4:
+        img = img[..., :3]
+    img_gray = color.rgb2gray(img) if img.ndim == 3 else img
+
+    # 2. Binarisierung + Morphologie 
+    binary = img_gray > filters.threshold_otsu(img_gray)
+    binary = morphology.binary_closing(binary, morphology.disk(3))
+    binary = morphology.binary_opening(binary, morphology.disk(5))
+
+    # 3. Distanztransformation 
+    distance = ndi.distance_transform_edt(binary)
+
+    #  4. Marker setzen 
+    coords = peak_local_max(
+        distance,
+        min_distance=min_distance,
+        threshold_rel=thresh_rel,
+        footprint=np.ones((5, 5)),
+        labels=binary
+    )
+    markers = np.zeros(distance.shape, dtype=np.int32)
+    for i, (r, c) in enumerate(coords, start=1):
+        markers[r, c] = i
+
+    #  5. Watershed 
+    labels_ws = segmentation.watershed(
+        -distance,
+        markers,
+        mask=binary,
+        watershed_line=True
+    )
+
+    #  6. Visualisierung 
+    # Erstes Fenster: Original + Marker und Distanzbild nebeneinander
+    fig1, ax1 = plt.subplots(1, 2, figsize=(5, 5))
+
+    ax1[0].imshow(img_gray, cmap='gray')
+    ax1[0].plot(coords[:, 1], coords[:, 0], 'r.', markersize=5)
+    ax1[0].set_title(f'Original mit {len(coords)} Markern')
+
+    ax1[1].imshow(distance, cmap='viridis')
+    ax1[1].set_title('Distanztransformation')
+
+    for a in ax1:
+        a.axis('off')
+    plt.tight_layout()
+    plt.show()
+
+    # Zweites Fenster: Segmentiertes Ergebnis separat
+    fig2, ax2 = plt.subplots(figsize=(5, 5))
+    ax2.imshow(labels_ws, cmap='nipy_spectral')
+    ax2.set_title(f'Segmentierte Zellen: {len(coords)}')
+    ax2.axis('off')
+    plt.tight_layout()
+    plt.show()
+
+    return labels_ws
+
+
+
+
+
+def save_raw_image(img, name, ext="tiff"):
+    """
+    Speichert Bild mit unveränderten Pixeldaten, z. B. für Analyse (Dice, KMeans).
+    """
+    downloads = os.path.join(os.path.expanduser("~"), "Downloads")
+    filename = f"{name}.{ext}"
+    output_path = os.path.join(downloads, filename)
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+    iio.imwrite(output_path, img)  # kein Clip, kein Umwandeln
+    print(f"RAW image saved to: {output_path}")
