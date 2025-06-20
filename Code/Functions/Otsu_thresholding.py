@@ -73,15 +73,10 @@ def display_images(original, name="Image"):
 
 
 def save_image(img, name, ext="tiff"):
-
-    # 1) Pfad zum Download-Ordner (Windows, macOS, Linux)
     downloads = os.path.join(os.path.expanduser("~"), "Downloads")
-    # 2) kompletten Dateinamen zusammenbauen
     filename = f"{name}.{ext.lstrip('.')}"
     output_path = os.path.join(downloads, filename)
-    # 3) sicherstellen, dass es den Ordner gibt
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    # 4) speichern
     success = cv2.imwrite(output_path, img)
     if success:
         print(f"Bild gespeichert unter: {output_path}")
