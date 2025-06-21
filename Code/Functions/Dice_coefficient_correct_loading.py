@@ -151,3 +151,88 @@ def evaluate_and_plot_dice_cells(image_pairs, title="Dice Score Vergleich"):
 
     return df
 
+import os
+import re
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+def evaluate_segmentation_line(otsu_pairs, kmeans_pairs, title="Vergleich der Methoden (Dice Score)"):
+    def extract_tname(filename):
+        match = re.search(r't\d+', filename)
+        return match.group(0) if match else filename
+
+    def evaluate(image_pairs, methode_name):
+        results = []
+
+        for pred_path, gt_path in image_pairs:
+            try:
+                y_pred = robust_image_loader(pred_path)
+                y_true = robust_image_loader(gt_path)
+            except FileNotFoundError as e:
+                print(f"Datei nicht gefunden: {e}")
+                continue
+
+            y_pred_gray = convert_to_grayscale(y_pred)
+            y_true_gray = convert_to_grayscale(y_true)
+
+            y_pred_norm = normalize_image(y_pred_gray)
+            y_true_norm = normalize_image(y_true_gray)
+
+            if y_pred_norm.shape != y_true_norm.shape:
+                y_true_norm = cv2.resize(y_true_norm, (y_pred_norm.shape[1], y_pred_norm.shape[0]), interpolation=cv2.INTER_NEAREST)
+
+            y_true_bin = binarize_image(y_true_norm, method='nonzero')
+            y_pred_bin = binarize_image(y_pred_norm, method='threshold', threshold=128)
+
+            dice_score = dice_coefficient(y_true_bin, y_pred_bin)
+            dice_inverted = dice_coefficient(y_true_bin, 1 - y_pred_bin)
+
+            if dice_inverted > dice_score:
+                dice_score = dice_inverted
+
+            results.append({
+                'Bild': os.path.basename(pred_path),
+                'TName': extract_tname(pred_path),
+                'DiceScore': dice_score,
+                'Methode': methode_name
+            })
+
+        return pd.DataFrame(results)
+
+    # Auswertung
+    df_otsu = evaluate(otsu_pairs, methode_name="Otsu")
+    df_kmeans = evaluate(kmeans_pairs, methode_name="KMeans")
+    df_combined = pd.concat([df_otsu, df_kmeans], ignore_index=True)
+
+    # Sortierung nach TName
+    df_combined['TName'] = pd.Categorical(
+        df_combined['TName'],
+        categories=sorted(df_combined['TName'].unique(), key=lambda x: int(x[1:])),
+        ordered=True
+    )
+
+    # Plot
+    plt.figure(figsize=(10, 6))
+    sns.set(style="whitegrid")
+
+    sns.lineplot(data=df_combined, x="TName", y="DiceScore", hue="Methode", marker="o", linewidth=2)
+
+    plt.ylim(0.4, 1.05)
+    plt.xlabel("Bild (tXX)", fontsize=14, fontweight='bold')
+    plt.ylabel("Dice Score", fontsize=14, fontweight='bold')
+    plt.title(title, fontsize=16, fontweight='bold')
+
+    plt.xticks(fontsize=12, fontweight='bold')
+    plt.yticks(fontsize=12, fontweight='bold')
+
+    plt.legend(
+        title="Methode",
+        title_fontsize=18,
+        fontsize=13,
+        loc="upper right"
+    )
+
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    plt.show()

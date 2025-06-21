@@ -355,12 +355,540 @@ def robust_image_loader(path):
 
 
 
+import os
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+from PIL import Image
+
+def evaluate_segmentation_spaghetti(otsu_pairs, kmeans_pairs, title="Vergleich der Methoden (Dice Score)"):
+
+    def robust_image_loader(path):
+        img = Image.open(path)
+        img = img.convert('RGB')
+        return np.array(img)
+
+    def convert_to_grayscale(img):
+        if len(img.shape) == 3 and img.shape[2] == 3:
+            return cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+        elif len(img.shape) == 2:
+            return img
+        else:
+            raise ValueError(f"Unerwartetes Bildformat: {img.shape}")
+
+    def normalize_image(img):
+        img = img.astype(np.float32)
+        img_min = img.min()
+        img_max = img.max()
+        if img_max > img_min:
+            img = (img - img_min) / (img_max - img_min) * 255
+        else:
+            img = np.zeros_like(img)
+        return img.astype(np.uint8)
+
+    def binarize_image(img, method='threshold', threshold=128):
+        if method == 'threshold':
+            _, bin_img = cv2.threshold(img, threshold, 1, cv2.THRESH_BINARY)
+        elif method == 'nonzero':
+            bin_img = (img > 0).astype(np.uint8)
+        else:
+            raise ValueError(f"Unbekannte Binarisierungs-Methode: {method}")
+        return bin_img
+
+    def dice_coefficient(y_true, y_pred):
+        y_true = y_true.astype(bool)
+        y_pred = y_pred.astype(bool)
+        intersection = np.logical_and(y_true, y_pred).sum()
+        size_sum = y_true.sum() + y_pred.sum()
+        if size_sum == 0:
+            return 1.0
+        return 2.0 * intersection / size_sum
+
+    def evaluate(image_pairs, methode_name):
+        results = []
+
+        for pred_path, gt_path in image_pairs:
+            try:
+                y_pred = robust_image_loader(pred_path)
+                y_true = robust_image_loader(gt_path)
+            except FileNotFoundError as e:
+                print(f"Datei nicht gefunden: {e}")
+                continue
+
+            y_pred_gray = convert_to_grayscale(y_pred)
+            y_true_gray = convert_to_grayscale(y_true)
+
+            y_pred_norm = normalize_image(y_pred_gray)
+            y_true_norm = normalize_image(y_true_gray)
+
+            if y_pred_norm.shape != y_true_norm.shape:
+                y_true_norm = cv2.resize(y_true_norm, (y_pred_norm.shape[1], y_pred_norm.shape[0]), interpolation=cv2.INTER_NEAREST)
+
+            y_true_bin = binarize_image(y_true_norm, method='nonzero')
+            y_pred_bin = binarize_image(y_pred_norm, method='threshold', threshold=128)
+
+            dice_score = dice_coefficient(y_true_bin, y_pred_bin)
+            dice_inverted = dice_coefficient(y_true_bin, 1 - y_pred_bin)
+
+            if dice_inverted > dice_score:
+                dice_score = dice_inverted
+
+            results.append({
+                'Bild': os.path.basename(pred_path),
+                'DiceScore': dice_score,
+                'Methode': methode_name
+            })
+
+        return pd.DataFrame(results)
+
+    # --- Auswertung für beide Methoden ---
+    df_otsu = evaluate(otsu_pairs, methode_name="Otsu")
+    df_kmeans = evaluate(kmeans_pairs, methode_name="KMeans")
+
+    df_combined = pd.concat([df_otsu, df_kmeans], ignore_index=True)
+
+    # --- Spaghetti-Plot ---
+    plt.figure(figsize=(8, 6))
+    sns.set(style="whitegrid")
+
+    method_order = ["Otsu", "KMeans"]  # feste Reihenfolge auf x-Achse
+    x_positions = {methode: i for i, methode in enumerate(method_order)}  # numerische Positionen
+
+    for bild, gruppe in df_combined.groupby('Bild'):
+        x_vals = [x_positions[m] for m in gruppe['Methode']]
+        y_vals = gruppe['DiceScore'].values
+
+        # Linie zwischen den beiden Punkten desselben Bildes
+        plt.plot(x_vals, y_vals, marker='o', linewidth=2, label=bild)
+
+        # Bildnamen leicht oberhalb der Punkte anzeigen
+        for x, y in zip(x_vals, y_vals):
+            plt.text(x, y + 0.02, bild, ha='center', fontsize=8, rotation=30)
+
+    plt.xticks(ticks=list(x_positions.values()), labels=method_order)
+    plt.ylim(0.4, 1.05)
+    plt.xlabel("Methode")
+    plt.ylabel("Dice Score")
+    plt.title(title)
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    plt.show()
+
+    return df_combined
+
+import os
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+from PIL import Image
+import re
+
+def evaluate_segmentation_line(otsu_pairs, kmeans_pairs, title="Vergleich der Methoden (Dice Score)"):
+
+    def robust_image_loader(path):
+        img = Image.open(path)
+        img = img.convert('RGB')
+        return np.array(img)
+
+    def convert_to_grayscale(img):
+        if len(img.shape) == 3 and img.shape[2] == 3:
+            return cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+        elif len(img.shape) == 2:
+            return img
+        else:
+            raise ValueError(f"Unerwartetes Bildformat: {img.shape}")
+
+    def normalize_image(img):
+        img = img.astype(np.float32)
+        img_min = img.min()
+        img_max = img.max()
+        if img_max > img_min:
+            img = (img - img_min) / (img_max - img_min) * 255
+        else:
+            img = np.zeros_like(img)
+        return img.astype(np.uint8)
+
+    def binarize_image(img, method='threshold', threshold=128):
+        if method == 'threshold':
+            _, bin_img = cv2.threshold(img, threshold, 1, cv2.THRESH_BINARY)
+        elif method == 'nonzero':
+            bin_img = (img > 0).astype(np.uint8)
+        else:
+            raise ValueError(f"Unbekannte Binarisierungs-Methode: {method}")
+        return bin_img
+
+    def dice_coefficient(y_true, y_pred):
+        y_true = y_true.astype(bool)
+        y_pred = y_pred.astype(bool)
+        intersection = np.logical_and(y_true, y_pred).sum()
+        size_sum = y_true.sum() + y_pred.sum()
+        if size_sum == 0:
+            return 1.0
+        return 2.0 * intersection / size_sum
+
+    def extract_tname(filename):
+        match = re.search(r't\d+', filename)
+        return match.group(0) if match else filename
+
+    def evaluate(image_pairs, methode_name):
+        results = []
+
+        for pred_path, gt_path in image_pairs:
+            try:
+                y_pred = robust_image_loader(pred_path)
+                y_true = robust_image_loader(gt_path)
+            except FileNotFoundError as e:
+                print(f"Datei nicht gefunden: {e}")
+                continue
+
+            y_pred_gray = convert_to_grayscale(y_pred)
+            y_true_gray = convert_to_grayscale(y_true)
+
+            y_pred_norm = normalize_image(y_pred_gray)
+            y_true_norm = normalize_image(y_true_gray)
+
+            if y_pred_norm.shape != y_true_norm.shape:
+                y_true_norm = cv2.resize(y_true_norm, (y_pred_norm.shape[1], y_pred_norm.shape[0]), interpolation=cv2.INTER_NEAREST)
+
+            y_true_bin = binarize_image(y_true_norm, method='nonzero')
+            y_pred_bin = binarize_image(y_pred_norm, method='threshold', threshold=128)
+
+            dice_score = dice_coefficient(y_true_bin, y_pred_bin)
+            dice_inverted = dice_coefficient(y_true_bin, 1 - y_pred_bin)
+
+            if dice_inverted > dice_score:
+                dice_score = dice_inverted
+
+            results.append({
+                'Bild': os.path.basename(pred_path),
+                'TName': extract_tname(pred_path),
+                'DiceScore': dice_score,
+                'Methode': methode_name
+            })
+
+        return pd.DataFrame(results)
+
+    # Auswertung
+    df_otsu = evaluate(otsu_pairs, methode_name="Otsu")
+    df_kmeans = evaluate(kmeans_pairs, methode_name="KMeans")
+    df_combined = pd.concat([df_otsu, df_kmeans], ignore_index=True)
+
+    # Sortierung nach TName
+    df_combined['TName'] = pd.Categorical(df_combined['TName'], 
+                                          categories=sorted(df_combined['TName'].unique(), key=lambda x: int(x[1:])),
+                                          ordered=True)
+
+    # Plot
+    plt.figure(figsize=(10, 6))
+    sns.set(style="whitegrid")
+
+    sns.lineplot(data=df_combined, x="TName", y="DiceScore", hue="Methode", marker="o", linewidth=2)
+
+    plt.ylim(0.4, 1.05)
+    plt.xlabel("Bild (tXX)", fontsize=14, fontweight='bold')
+    plt.ylabel("Dice Score", fontsize=14, fontweight='bold')
+    plt.title(title, fontsize=16, fontweight='bold')
+
+    plt.xticks(fontsize=12, fontweight='bold')
+    plt.yticks(fontsize=12, fontweight='bold')
+
+    plt.legend(
+        title="Methode",
+        title_fontsize=18,
+        fontsize=13,
+        loc="upper right"
+    )
+
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    plt.show()
 
 
 
+import os
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+from PIL import Image
+import re
 
+def evaluate_segmentation_line_test(otsu_pairs, kmeans_pairs, title="Vergleich der Methoden (Dice Score)"):
 
+    def robust_image_loader(path):
+        img = Image.open(path)
+        img = img.convert('RGB')
+        return np.array(img)
 
+    def convert_to_grayscale(img):
+        if len(img.shape) == 3 and img.shape[2] == 3:
+            return cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+        elif len(img.shape) == 2:
+            return img
+        else:
+            raise ValueError(f"Unerwartetes Bildformat: {img.shape}")
 
+    def normalize_image(img):
+        img = img.astype(np.float32)
+        img_min = img.min()
+        img_max = img.max()
+        if img_max > img_min:
+            img = (img - img_min) / (img_max - img_min) * 255
+        else:
+            img = np.zeros_like(img)
+        return img.astype(np.uint8)
+
+    def binarize_image(img, method='threshold', threshold=128):
+        if method == 'threshold':
+            _, bin_img = cv2.threshold(img, threshold, 1, cv2.THRESH_BINARY)
+        elif method == 'nonzero':
+            bin_img = (img > 0).astype(np.uint8)
+        else:
+            raise ValueError(f"Unbekannte Binarisierungs-Methode: {method}")
+        return bin_img
+
+    def dice_coefficient(y_true, y_pred):
+        y_true = y_true.astype(bool)
+        y_pred = y_pred.astype(bool)
+        intersection = np.logical_and(y_true, y_pred).sum()
+        size_sum = y_true.sum() + y_pred.sum()
+        if size_sum == 0:
+            return 1.0
+        return 2.0 * intersection / size_sum
+
+    def extract_tname(filename):
+        match = re.search(r't\d+', filename)
+        return match.group(0) if match else filename
+
+    def evaluate(image_pairs, methode_name):
+        results = []
+
+        for pred_path, gt_path in image_pairs:
+            try:
+                y_pred = robust_image_loader(pred_path)
+                y_true = robust_image_loader(gt_path)
+            except FileNotFoundError as e:
+                print(f"Datei nicht gefunden: {e}")
+                continue
+
+            y_pred_gray = convert_to_grayscale(y_pred)
+            y_true_gray = convert_to_grayscale(y_true)
+
+            y_pred_norm = normalize_image(y_pred_gray)
+            y_true_norm = normalize_image(y_true_gray)
+
+            if y_pred_norm.shape != y_true_norm.shape:
+                y_true_norm = cv2.resize(y_true_norm, (y_pred_norm.shape[1], y_pred_norm.shape[0]), interpolation=cv2.INTER_NEAREST)
+
+            y_true_bin = binarize_image(y_true_norm, method='nonzero')
+            y_pred_bin = binarize_image(y_pred_norm, method='threshold', threshold=128)
+
+            dice_score = dice_coefficient(y_true_bin, y_pred_bin)
+            dice_inverted = dice_coefficient(y_true_bin, 1 - y_pred_bin)
+
+            if dice_inverted > dice_score:
+                dice_score = dice_inverted
+
+            results.append({
+                'Bild': os.path.basename(pred_path),
+                'TName': extract_tname(pred_path),
+                'DiceScore': dice_score,
+                'Methode': methode_name
+            })
+
+        return pd.DataFrame(results)
+
+    # Auswertung
+    df_otsu = evaluate(otsu_pairs, methode_name="Otsu")
+    df_kmeans = evaluate(kmeans_pairs, methode_name="KMeans")
+    df_combined = pd.concat([df_otsu, df_kmeans], ignore_index=True)
+
+    # Sortierung nach TName
+    df_combined['TName'] = pd.Categorical(df_combined['TName'], 
+                                          categories=sorted(df_combined['TName'].unique(), key=lambda x: int(x[1:])),
+                                          ordered=True)
+
+    # Plot
+    plt.figure(figsize=(10, 6))
+    sns.set(style="whitegrid")
+
+    sns.lineplot(data=df_combined, x="TName", y="DiceScore", hue="Methode", marker="o", linewidth=2)
+
+    plt.ylim(0.4, 1.05)
+    plt.xlabel("Bild (tXX)", fontsize=14, fontweight='bold')
+    plt.ylabel("Dice Score", fontsize=14, fontweight='bold')
+    plt.title(title, fontsize=16, fontweight='bold')
+
+    plt.xticks(fontsize=12, fontweight='bold')
+    plt.yticks(fontsize=12, fontweight='bold')
+
+    plt.legend(
+        title="Methode",
+        title_fontsize=18,
+        fontsize=13,
+        loc="upper right"
+    )
+
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    plt.show()
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
+import re
+
+def evaluate_dice_all_in_one(image_pairs, title="Dice Score Vergleich"):
+    import os
+    import numpy as np
+    import cv2
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    import pandas as pd
+    from PIL import Image
+
+    def robust_image_loader(path):
+        img = Image.open(path)
+        img = img.convert('RGB')
+        return np.array(img)
+
+    def convert_to_grayscale(img):
+        if len(img.shape) == 3 and img.shape[2] == 3:
+            return cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+        elif len(img.shape) == 2:
+            return img
+        else:
+            raise ValueError(f"Unerwartetes Bildformat: {img.shape}")
+
+    def normalize_image(img):
+        img = img.astype(np.float32)
+        img_min = img.min()
+        img_max = img.max()
+        if img_max > img_min:
+            img = (img - img_min) / (img_max - img_min) * 255
+        else:
+            img = np.zeros_like(img)
+        return img.astype(np.uint8)
+
+    def binarize_image(img, method='threshold', threshold=128):
+        if method == 'threshold':
+            _, bin_img = cv2.threshold(img, threshold, 1, cv2.THRESH_BINARY)
+        elif method == 'nonzero':
+            bin_img = (img > 0).astype(np.uint8)
+        else:
+            raise ValueError(f"Unbekannte Binarisierungs-Methode: {method}")
+        return bin_img
+
+    def dice_coefficient(y_true, y_pred):
+        y_true = y_true.astype(bool)
+        y_pred = y_pred.astype(bool)
+        intersection = np.logical_and(y_true, y_pred).sum()
+        size_sum = y_true.sum() + y_pred.sum()
+        if size_sum == 0:
+            return 1.0
+        return 2.0 * intersection / size_sum
+
+    def is_binary(img):
+        values = np.unique(img)
+        return set(values).issubset({0, 1}) or set(values).issubset({0, 255}) or len(values) <= 2
+
+    results = []
+
+    for pred_path, gt_path in image_pairs:
+        print(f"\n--- Vergleiche: {os.path.basename(pred_path)} mit {os.path.basename(gt_path)} ---")
+
+        try:
+            y_pred = robust_image_loader(pred_path)
+            y_true = robust_image_loader(gt_path)
+        except FileNotFoundError as e:
+            print(f"Datei nicht gefunden: {e}")
+            continue
+
+        y_pred_gray = convert_to_grayscale(y_pred)
+        y_true_gray = convert_to_grayscale(y_true)
+
+        print("Unique Werte vor Verarbeitung:")
+        print("Prediction:", np.unique(y_pred_gray))
+        print("Ground Truth:", np.unique(y_true_gray))
+
+        if not is_binary(y_pred_gray):
+            y_pred_gray = normalize_image(y_pred_gray)
+
+        unique_gt = np.unique(y_true_gray)
+        if len(unique_gt) > 20:
+            print(f"⚠️ Achtung: Ground Truth enthält viele Klassen ({len(unique_gt)}) — wird als binäre Maske vereinfacht.")
+
+        y_true_bin = binarize_image(y_true_gray, method='nonzero')
+
+        if is_binary(y_pred_gray):
+            y_pred_bin = (y_pred_gray > 0).astype(np.uint8)
+            print("Prediction war bereits binär.")
+        else:
+            y_pred_bin = binarize_image(y_pred_gray, method='threshold', threshold=128)
+            print("Prediction wurde binarisiert mit Schwelle 128.")
+
+        dice_score = dice_coefficient(y_true_bin, y_pred_bin)
+        dice_inverted = dice_coefficient(y_true_bin, 1 - y_pred_bin)
+        if dice_inverted > dice_score:
+            print("Maske invertiert, weil Score besser.")
+            y_pred_bin = 1 - y_pred_bin
+            dice_score = dice_inverted
+
+        print("Unique Werte nach Verarbeitung:")
+        print("Prediction:", np.unique(y_pred_bin))
+        print("Ground Truth:", np.unique(y_true_bin))
+        print(f"Dice Score: {dice_score:.4f}")
+
+        results.append({'Bild': os.path.splitext(os.path.basename(pred_path))[0], 'DiceScore': dice_score})
+
+        # Debug-Visualisierung
+        plt.figure(figsize=(12, 4))
+        plt.suptitle(f"Überprüfung: {os.path.basename(pred_path)}")
+
+        plt.subplot(1, 3, 1)
+        plt.imshow(y_true_bin, cmap='gray')
+        plt.title("Ground Truth")
+
+        plt.subplot(1, 3, 2)
+        plt.imshow(y_pred_bin, cmap='gray')
+        plt.title("Prediction")
+
+        plt.subplot(1, 3, 3)
+        overlay = np.zeros((*y_true_bin.shape, 3), dtype=np.uint8)
+        overlay[y_true_bin == 1] = [255, 0, 0]
+        overlay[y_pred_bin == 1] = [0, 0, 255]
+        plt.imshow(overlay)
+        plt.title("Überlagerung")
+
+        plt.tight_layout()
+        plt.show()
+
+    # Balkendiagramm
+    df = pd.DataFrame(results)
+
+    sns.set_theme(style="whitegrid")
+    plt.figure(figsize=(10, 6))
+    colors = sns.color_palette("hsv", len(df))
+    barplot = sns.barplot(data=df, x='Bild', y='DiceScore', hue='Bild', palette=colors, edgecolor='black', dodge=False)
+    plt.legend([], [], frameon=False)
+    for p in barplot.patches:
+        barplot.annotate(f'{p.get_height():.3f}',
+                         (p.get_x() + p.get_width() / 2, p.get_height()),
+                         ha='center', va='bottom', fontsize=10)
+    plt.xticks(rotation=45, ha='right')
+    plt.ylim(0, 1)
+    plt.ylabel("Dice Score")
+    plt.xlabel("Bild")
+    plt.title(title)
+    plt.tight_layout()
+    plt.show()
+
+    return df
 
 
