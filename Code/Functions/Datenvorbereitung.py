@@ -496,6 +496,7 @@ def apply_watershed(image, num_markers):
     ax2.axis('off')
     plt.tight_layout()
     plt.show()
+    print(f"Anzahl der segmentierten Zellen: {len(np.unique(labels_ws)) - 1}")
 
     return labels_ws
 
