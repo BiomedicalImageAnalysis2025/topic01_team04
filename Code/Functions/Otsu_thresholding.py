@@ -81,7 +81,7 @@ def save_image(img, name, ext="tiff"):
     if success:
         print(f"Bild gespeichert unter: {output_path}")
     else:
-        print(f"❌ Fehler beim Speichern von: {output_path}")
+        print(f" Fehler beim Speichern von: {output_path}")
 
 
 

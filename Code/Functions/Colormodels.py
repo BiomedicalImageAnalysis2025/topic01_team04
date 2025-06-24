@@ -170,3 +170,19 @@ def plot_hsv_histograms(hsv_image):
     plt.tight_layout()
     plt.show()
 
+
+def hsv_to_rgb(hsv_image):
+    """
+    Converts an HSV image (numpy array) to RGB.
+
+    Parameters:
+    hsv_image (numpy.ndarray): Input HSV image.
+
+    Returns:
+    numpy.ndarray: Converted RGB image.
+    """
+    # convert HSV to BGR (OpenCV expects BGR, so first convert HSV->BGR)
+    image_bgr = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
+    # convert BGR to RGB
+    image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+    return image_rgb
