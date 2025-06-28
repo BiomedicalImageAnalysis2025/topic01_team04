@@ -9,7 +9,7 @@ from Functions.FinalKMeans import update_centroids
 from Functions.FinalKMeans import save_image
 from Functions.FinalKMeans import save_image_universal
 
-def preprocess_gray_with_coords(data, mask=None):
+def preprocess_gray_with_coords(data, intensity_weight=2, mask=None):
     """
     Erstellt Feature-Vektoren aus Grauwert und (x, y)-Koordinaten.
     Optional: mask = nur für Vordergrund (z.B. Zellen).
@@ -18,8 +18,11 @@ def preprocess_gray_with_coords(data, mask=None):
     X, Y = np.meshgrid(np.arange(w), np.arange(h))
     # Normalisiere Koordinaten und Intensität
     X = X / w
-    Y = Y / h
-    I = data / data.max()
+    Y = Y / h 
+    #I = data / data.max() # Not necessary, as data is already normalized in kmeans_with_coords
+    # intensity_weight should be 2 to adjust the influence of intensity in the feature vector, since if intensity_weight would be 1,
+    # the influence of intensity wouldnt be equal to the influence of coordinates (coordinates weighted 2x since I,X,Y are stacked in the feature vector)
+    I = data * intensity_weight 
     if mask is not None:
         features = np.stack([I[mask], X[mask], Y[mask]], axis=1)
     else:
@@ -28,7 +31,7 @@ def preprocess_gray_with_coords(data, mask=None):
 
 
 #Segmentation with KMeans clustering using just created functions
-def kmeans_with_coords(data, k, max_iters=100, tol=1e-4, init_method='kmeans++', space='rgb'):
+def kmeans_with_coords(data, k, max_iters=100, tol=1e-4, init_method='kmeans++', intensity_weight=10, mask_usage = False, space='rgb'):
     """
     Vollständiger K-Means Ablauf:
     1. init_centroids
@@ -38,6 +41,7 @@ def kmeans_with_coords(data, k, max_iters=100, tol=1e-4, init_method='kmeans++',
     Returns: centroids, labels, segmented_image
     - data: 2D-Array (n_samples, n_features) für RGB/HSV/Grayscale
     - k: Anzahl der Cluster 
+    intensity_weight: Gewichtung der Intensität in den Feature-Vektoren
     """
 
     #Normalize data
@@ -45,16 +49,28 @@ def kmeans_with_coords(data, k, max_iters=100, tol=1e-4, init_method='kmeans++',
     data = (data - data.min()) / (data.max() - data.min())
 
     #Drop alpha channel if present
-    if data.ndim == 3 and data.shape[2] == 4:
-        data = data[..., :3]
-    else:
-        data = data
+    #if data.ndim == 3 and data.shape[2] == 4:
+     #   data = data[..., :3]
+    #else:
+     #   data = data
 
-     # threshold um den hintergrund schwarz zu färben?
-    threshold = 0.1
-    mask = data > threshold
+    # create mask to eclude background pixels from segmentation
+    # Schritt 1: Maske erzeugen
+    features = data.ravel().reshape(-1, 1)
+    centroids = init_centroids(features, 2)
+    for _ in range(max_iters):
+        labels = assign_to_centroids(features, centroids)
+        centroids = update_centroids(features, labels, 2)
+        label_img = labels.reshape(data.shape)
+        bg_cluster = np.argmin(centroids.flatten())
+        mask = label_img != bg_cluster
+    #threshold = 
+    #mask = data > threshold
     
-    img = preprocess_gray_with_coords(data, mask=mask)
+    if mask_usage == True:
+        img = preprocess_gray_with_coords(data, intensity_weight=intensity_weight, mask=mask)
+    elif mask_usage == False:
+        img = preprocess_gray_with_coords(data, intensity_weight=intensity_weight, mask=None)
 
     data_shape = data.shape
     centroids = init_centroids(img, k, method=init_method)
@@ -65,11 +81,15 @@ def kmeans_with_coords(data, k, max_iters=100, tol=1e-4, init_method='kmeans++',
             break
         centroids = new_centroids
 
-        segmented_image = reconstruct_colored_segmentation(labels, mask, data_shape, k)
+        if mask_usage == True:
+            segmented_image = reconstruct_colored_segmentation_mask(labels, mask, data_shape, k)
+        elif mask_usage == False:
+            segmented_image = reconstruct_colored_segmentation(labels, data_shape, k)
+   
     return centroids, labels, segmented_image
 
 
-def reconstruct_colored_segmentation(labels, mask, shape, k):
+def reconstruct_colored_segmentation_mask(labels, mask, shape, k):
     """
     Rekonstruiert ein farbiges Segmentierungsbild mit schwarzem Hintergrund.
     """
@@ -77,4 +97,14 @@ def reconstruct_colored_segmentation(labels, mask, shape, k):
     colors = color_map(np.arange(k))[:, :3]  # RGB-Farben für Cluster
     seg_img = np.zeros((shape[0], shape[1], 3))  # Schwarz als Hintergrund
     seg_img[mask] = colors[labels]
+    return seg_img
+
+def reconstruct_colored_segmentation(labels, shape, k):
+    """
+    Rekonstruiert ein farbiges Segmentierungsbild ohne Maske.
+    Jeder Cluster bekommt eine eigene Farbe.
+    """
+    color_map = plt.cm.get_cmap('tab10', k)
+    colors = color_map(np.arange(k))[:, :3]  # RGB-Farben für Cluster
+    seg_img = colors[labels].reshape(shape[0], shape[1], 3)
     return seg_img
