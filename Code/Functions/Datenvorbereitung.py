@@ -502,11 +502,20 @@ def apply_watershed(image, num_markers):
     plt.tight_layout()
     plt.show()
 
-    # Zweites Plotfenster: Segmentierte Zellen separat
-    fig2, ax2 = plt.subplots(figsize=(5, 5))
-    ax2.imshow(color.label2rgb(labels_ws, image=img_gray, bg_label=0))
-    ax2.set_title('Segmentierte Zellen (Watershed)')
-    ax2.axis('off')
+# Zweites Plotfenster: Segmentierte Zellen separat
+fig2, ax2 = plt.subplots(figsize=(5, 5))
+ax2.imshow(color.label2rgb(
+    labels_ws,
+    bg_label=0,
+    bg_color=(0, 0, 0),
+    kind='overlay',
+    image_alpha=0  # (optional, aber verstärkt den Effekt)))
+
+
+
+# Segmentierte Zellen als Graustufenbild anzeigen
+    ax2.imshow(color.label2gray(labels_ws), cmap='gray')
+    ax2.axis('on')
     plt.tight_layout()
     plt.show()
     print(f"Anzahl der segmentierten Zellen: {len(np.unique(labels_ws)) - 1}")
