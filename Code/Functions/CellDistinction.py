@@ -108,3 +108,50 @@ def reconstruct_colored_segmentation(labels, shape, k):
     colors = color_map(np.arange(k))[:, :3]  # RGB-Farben für Cluster
     seg_img = colors[labels].reshape(shape[0], shape[1], 3)
     return seg_img
+
+
+ # Function to identify the ideal number of clusters using the Elbow Method
+def elbow_method_with_coords(data, k, max_k=10, max_iters=100, tol=1e-4, init_method='kmeans++', intensity_weight=10, mask_usage = False, space='rgb'):
+    """
+    Identifies the ideal number of clusters using the Elbow Method.
+
+    Parameters:
+    - image: 3D numpy array representing the image.
+    - max_k: Maximum number of clusters to test.
+
+    Returns:
+    - wcss: List of WCSS values for each k.
+    """
+    wcss = []
+
+    #Drop alpha channel if present
+    if data.ndim == 3 and data.shape[2] == 4:
+        data = data[..., :3]
+    else:
+        data = data
+
+# create mask to eclude background pixels from segmentation
+    # Schritt 1: Maske erzeugen
+    features = data.ravel().reshape(-1, 1)
+    centroids = init_centroids(features, 2)
+    for _ in range(max_iters):
+        labels = assign_to_centroids(features, centroids)
+        centroids = update_centroids(features, labels, 2)
+        label_img = labels.reshape(data.shape)
+        bg_cluster = np.argmin(centroids.flatten())
+        mask = label_img != bg_cluster
+    #threshold = 
+    #mask = data > threshold
+    
+    if mask_usage == True:
+        img = preprocess_gray_with_coords(data, intensity_weight=intensity_weight, mask=mask)
+    elif mask_usage == False:
+        img = preprocess_gray_with_coords(data, intensity_weight=intensity_weight, mask=None)
+        
+    reshaped_image = img
+    for k in range(1, max_k + 1):
+        centroids, labels, _ = kmeans_with_coords(data, k, max_iters, tol, init_method, intensity_weight, mask_usage, space)
+        # WCSS: Sum of squared distances of each point to its assigned centroid
+        distances = np.sum((reshaped_image - centroids[labels]) ** 2)
+        wcss.append(distances)
+    return wcss
