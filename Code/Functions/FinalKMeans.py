@@ -87,7 +87,7 @@ def assign_to_centroids(data, centroids):
     Distanzmetriken: euklidisch (Lloyd, 1982).
     Returns: labels (n_samples,)
     """
-    dists = np.linalg.norm(data[:, None, :] - centroids[None, :, :], axis=2)s
+    dists = np.linalg.norm(data[:, None, :] - centroids[None, :, :], axis=2)
     return np.argmin(dists, axis=1)
 
 
@@ -208,4 +208,79 @@ def save_image_universal(image, path, space='rgb'):
         if img.ndim == 3 and img.shape[2] == 1:
             img = img.squeeze(axis=2)
         plt.imsave(path, img, cmap='gray')
+
+
+        # Function to identify the ideal number of clusters using the Elbow Method
+def elbow_method(data, max_k=10, max_iters=100, tol=1e-4, init_method='kmeans++', space='rgb'):
+    """
+    Identifies the ideal number of clusters using the Elbow Method.
+
+    Parameters:
+    - image: 3D numpy array representing the image.
+    - max_k: Maximum number of clusters to test.
+
+    Returns:
+    - wcss: List of WCSS values for each k.
+    """
+    wcss = []
+
+    #Drop alpha channel if present
+    if data.ndim == 3 and data.shape[2] == 4:
+        data = data[..., :3]
+    else:
+        data = data
+        
+    reshaped_image = data.reshape(-1, 3)
+    for k in range(1, max_k + 1):
+        centroids, labels, _ = kmeans(data, k, max_iters, tol, init_method, space)
+        # WCSS: Sum of squared distances of each point to its assigned centroid
+        distances = np.sum((reshaped_image - centroids[labels]) ** 2)
+        wcss.append(distances)
+    return wcss
+
+
+# Function to plot the Elbow Method results
+def plot_elbow_method(wcss):
+    """
+    Plots the WCSS values to visualize the Elbow Method.
+
+    Parameters:
+    - wcss: List of WCSS values for each k.
+    """
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(1, len(wcss) + 1), wcss, marker='o')
+    plt.title('Elbow Method for Optimal k')
+    plt.xlabel('Number of clusters (k)')
+    plt.ylabel('WCSS (Within-Cluster Sum of Squares)')
+    plt.xticks(range(1, len(wcss) + 1))
+    plt.grid()
+    plt.show()
+
+
+# Function to identify the k where the elbow occurs (Das "Knie" ist der Punkt, der am weitesten von der Verbindungslinie zwischen erstem und letztem Punkt entfernt ist ("knee point" nach der "distance to line"-Methode).)
+def find_elbow(wcss):
+    """
+    Identifies the elbow point in the WCSS values using the 'distance to line' method.
+
+    Parameters:
+    - wcss: List of WCSS values for each k.
+
+    Returns:
+    - elbow_k: The k value where the elbow occurs.
+    """
+    n_points = len(wcss)
+    all_k = np.arange(1, n_points + 1)
+    # Line from first to last point
+    line_vec = np.array([all_k[-1] - all_k[0], wcss[-1] - wcss[0]])
+    line_vec = line_vec / np.linalg.norm(line_vec)
+    # Distances
+    distances = []
+    for i in range(n_points):
+        point = np.array([all_k[i] - all_k[0], wcss[i] - wcss[0]])
+        proj = np.dot(point, line_vec) * line_vec
+        dist = np.linalg.norm(point - proj)
+        distances.append(dist)
+    elbow_index = np.argmax(distances)
+    return all_k[elbow_index]
+
  
