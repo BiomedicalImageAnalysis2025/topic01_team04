@@ -111,7 +111,7 @@ def reconstruct_colored_segmentation(labels, shape, k):
 
 
  # Function to identify the ideal number of clusters using the Elbow Method
-def elbow_method_with_coords(data, k, max_k=10, max_iters=100, tol=1e-4, init_method='kmeans++', intensity_weight=10, mask_usage = False, space='rgb'):
+def elbow_method_with_coords(data, max_k=10, max_iters=100, tol=1e-4, init_method='kmeans++', intensity_weight=10, mask_usage = False, space='rgb'):
     """
     Identifies the ideal number of clusters using the Elbow Method.
 
