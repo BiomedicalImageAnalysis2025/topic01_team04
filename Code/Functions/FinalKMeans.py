@@ -1,14 +1,16 @@
+#Coded by Jonas Schenker
+
 import numpy as np
 import matplotlib.pyplot as plt
 import os # To save images
 from matplotlib import colors # To convert image models
 
 
-# K-Means Clustering für Bildsegmentierung in RGB, HSV und Grayscale
-# Modular implementiert mit init_centroids, assign_to_centroids, update_centroids
+# K-Means clustering for image segmentation in RGB, HSV, and Grayscale
+# Modular implementation with init_centroids, assign_to_centroids, update_centroids
 
 
-# Hilfsfunktionen für Bildvorbereitung
+# Helper functions for image preprocessing
 def preprocess_rgb(img):
     #h, w, _ = img.shape
     return img.reshape(-1, 3)#, (h, w)
@@ -23,18 +25,18 @@ def preprocess_grayscale(img):
 
 def preprocess_hsv(img):
     """
-    Wandelt ein RGB-Bild in HSV um, falls nötig, und gibt die HSV-Features zurück.
-    Falls das Bild bereits HSV ist (Wertebereich H,S,V jeweils zwischen 0 und 1), wird nichts geändert.
+    Converts an RGB image to HSV if necessary and returns the HSV features.
+    If the image is already in HSV (values between 0 and 1), nothing is changed.
     """
-    # Prüfe, ob das Bild RGB ist (typischerweise uint8 oder float mit max > 1)
+    # Check if the image is RGB (typically uint8 or float with max > 1)
     if img.shape[-1] == 3 and (img.dtype == np.uint8 or img.max() > 1.0):
-        # Bild ist RGB, umwandeln in float und normalisieren
+        # Image is RGB, convert to float and normalize
         img = img.astype(float)
         if img.max() > 1.0:
             img /= 255.0
         hsv = colors.rgb_to_hsv(img)
     else:
-        # Bild ist vermutlich schon HSV
+        # image is already in HSV format
         hsv = img
     #h, w, _ = hsv.shape
     return hsv.reshape(-1, 3)#, (h, w)
@@ -42,10 +44,10 @@ def preprocess_hsv(img):
 
 def preprocess_image(img, space='rgb'):
     """
-    Preprocessing der Bilddaten je nach Farbraum.
-    - space='rgb': RGB-Bild
-    - space='hsv': HSV-Bild
-    - space='gray': Graustufenbild
+    Preprocessing the image data depending on the color space.
+    - space='rgb': RGB image
+    - space='hsv': HSV image
+    - space='gray': Grayscale image
     """
     if space == 'rgb':
         return preprocess_rgb(img)
@@ -59,17 +61,17 @@ def preprocess_image(img, space='rgb'):
 # Functions for segmentation
 def init_centroids(data, k, method='random'):
     """
-    Initialisiert k Zentroiden aus den Daten.
-    - method='random': Zufällige Auswahl (MacQueen, 1967).
-    - method='kmeans++': k-means++ Seeding (Arthur & Vassilvitskii, 2007).
+    Initializes k centroids from the data.
+    - method='random': Random selection (MacQueen, 1967).
+    - method='kmeans++': k-means++ seeding (Arthur & Vassilvitskii, 2007).
     """
     n_samples = data.shape[0]
     if method == 'kmeans++':
         centroids = []
-        # erstes Zentrum zufällig
+        # first centroid randomly
         idx = np.random.randint(n_samples)
         centroids.append(data[idx])
-        # weitere Zentren
+        # additional centroids based on distance
         for _ in range(1, k):
             dists = np.min(np.linalg.norm(data[:, None, :] - np.array(centroids)[None, :, :], axis=2)**2, axis=1)
             probs = dists / dists.sum()
@@ -83,8 +85,8 @@ def init_centroids(data, k, method='random'):
 
 def assign_to_centroids(data, centroids):
     """
-    Ordnet jedes Sample dem nächsten Zentroiden zu.
-    Distanzmetriken: euklidisch (Lloyd, 1982).
+    Assigns each sample to the nearest centroid.
+    Distance metric: Euclidean
     Returns: labels (n_samples,)
     """
     dists = np.linalg.norm(data[:, None, :] - centroids[None, :, :], axis=2)
@@ -93,7 +95,7 @@ def assign_to_centroids(data, centroids):
 
 def update_centroids(data, labels, k):
     """
-    Berechnet neue Zentroiden als Mittelwerte der jeweils zugeordneten Datenpunkte.
+    Computes new centroids as the mean of the data points assigned to each cluster.
     """
     n_features = data.shape[1]
     centroids = np.zeros((k, n_features), dtype=float)
@@ -110,14 +112,14 @@ def update_centroids(data, labels, k):
 #Segmentation with KMeans clustering using just created functions
 def kmeans(data, k, max_iters=100, tol=1e-4, init_method='kmeans++', space='rgb'):
     """
-    Vollständiger K-Means Ablauf:
+    Complete K-Means workflow:
     1. init_centroids
     2. assign_to_centroids
     3. update_centroids
-    4. Abbruch bei Konvergenz oder max_iters
+    4. Stop on convergence or max_iters
     Returns: centroids, labels, segmented_image
-    - data: 2D-Array (n_samples, n_features) für RGB/HSV/Grayscale
-    - k: Anzahl der Cluster 
+    - data: 2D array (n_samples, n_features) for RGB/HSV/Grayscale
+    - k: number of clusters 
     """
     #Normalize data
     data = np.copy(data.astype(float))
@@ -147,26 +149,26 @@ def kmeans(data, k, max_iters=100, tol=1e-4, init_method='kmeans++', space='rgb'
 #Reconstruct just segmented images
 def reconstruct_segmented_image(centroids, labels, data_shape, space):
     """
-    Rekonstruiert ein segmentiertes Bild aus KMeans-Labels und Zentroiden.
-    
+    Reconstructs a segmented image from KMeans labels and centroids.
+
     Parameters:
-        labels: 1D-Array mit Clusterzuordnung für jedes Pixel (z.B. shape (h*w,))
-        centroids: Array mit den Zentroiden (z.B. shape (k, 1) für Graustufen oder (k, 3) für RGB)
-        image_shape: Tuple mit der Zielbildform (z.B. (h, w) für Graustufen, (h, w, 3) für RGB)
-    
+        labels: 1D array with cluster assignment for each pixel (e.g., shape (h*w,))
+        centroids: Array with centroids (e.g., shape (k, 1) for grayscale or (k, 3) for RGB)
+        data_shape: Tuple with the target image shape (e.g., (h, w) for grayscale, (h, w, 3) for RGB)
+
     Returns:
-        segmented_image: Das rekonstruierte segmentierte Bild in Originalform.
+        segmented_image: The reconstructed segmented image in original shape.
     """
     
     segmented_flat = centroids[labels]
     if space == 'rgb':
-        # Weise jedem Pixel die Farbe seines Clusters zu
+        # assign each pixel the RGB color of its cluster
         segmented_image = segmented_flat.reshape(data_shape[0], data_shape[1], 3)
     elif space == 'hsv':
-        # Weise jedem Pixel die Farbe seines Clusters zu und konvertiere zurück nach RGB
+        # assign each pixel the HSV color of its cluster and convert to RGB
         segmented_image = colors.hsv_to_rgb(segmented_flat.reshape(data_shape[0], data_shape[1], 3))
     elif space == 'gray':
-        # Weise jedem Pixel die Graustufenfarbe seines Clusters zu
+        # assign each pixel the grayscale value of its cluster
         segmented_image = segmented_flat.reshape(data_shape[0], data_shape[1], 1)
       
     return segmented_image
@@ -175,27 +177,27 @@ def reconstruct_segmented_image(centroids, labels, data_shape, space):
 #Save image
 def save_image(image, path):
     """
-    Speichert ein Bild (numpy array) im angegebenen Pfad.
+    saves an image (numpy array) to the specified path.
     """
-    # Erstelle den Ordner, falls er nicht existiert
+    # create folder if it does not exist
     os.makedirs(os.path.dirname(path), exist_ok=True)
     plt.imsave(path, image)
 
 #Save image of different color models (RGB, HSV, Grayscale)
 def save_image_universal(image, path, space='rgb'):
     """
-    Speichert ein Bild je nach Farbraum (RGB, HSV, Grayscale) am angegebenen Pfad.
+    Saves an image according to the color space (RGB, HSV, Grayscale) at the specified path.
     - image: numpy array
-    - path: Speicherpfad (inkl. Dateiname)
-    - space: 'rgb', 'hsv' oder 'gray'
+    - path: save path (including filename)
+    - space: 'rgb', 'hsv', or 'gray'
     """
     os.makedirs(os.path.dirname(path), exist_ok=True)
     img = np.copy(image)
     if space == 'hsv':
-        # HSV zu RGB konvertieren
+        # convert HSV to RGB if necessary
         #if img.max() > 1.0:
          #   img = img / 255.0
-        #img = colors.hsv_to_rgb(img)  #Umwandlung bereits in reconstruct_segmented_image durchgeführt
+        #img = colors.hsv_to_rgb(img)  #conversion already done in reconstruct_segmented_image done
         plt.imsave(path, img)
     elif space == 'rgb':
         if img.max() > 1.0:
@@ -204,13 +206,13 @@ def save_image_universal(image, path, space='rgb'):
     elif space == 'gray':
         if img.max() > 1.0:
             img = img / 255.0
-        # Falls das Bild shape (H, W, 1) hat, squeeze auf (H, W)
+        # if image is 3D with single channel, squeeze it to 2D
         if img.ndim == 3 and img.shape[2] == 1:
             img = img.squeeze(axis=2)
         plt.imsave(path, img, cmap='gray')
 
 
-        # Function to identify the ideal number of clusters using the Elbow Method
+# Function to identify the ideal number of clusters using the Elbow Method
 def elbow_method(data, max_k=10, max_iters=100, tol=1e-4, init_method='kmeans++', space='rgb'):
     """
     Identifies the ideal number of clusters using the Elbow Method.
@@ -257,7 +259,7 @@ def plot_elbow_method(wcss):
     plt.show()
 
 
-# Function to identify the k where the elbow occurs (Das "Knie" ist der Punkt, der am weitesten von der Verbindungslinie zwischen erstem und letztem Punkt entfernt ist ("knee point" nach der "distance to line"-Methode).)
+# Function to identify the k where the elbow occurs (The "elbow" is the point farthest from the line connecting the first and last point ("knee point" using the "distance to line" method).)
 def find_elbow(wcss):
     """
     Identifies the elbow point in the WCSS values using the 'distance to line' method.

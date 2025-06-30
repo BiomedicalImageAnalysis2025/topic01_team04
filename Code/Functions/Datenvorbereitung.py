@@ -503,13 +503,13 @@ def apply_watershed(image, num_markers):
     plt.show()
 
 # Zweites Plotfenster: Segmentierte Zellen separat
-fig2, ax2 = plt.subplots(figsize=(5, 5))
-ax2.imshow(color.label2rgb(
-    labels_ws,
-    bg_label=0,
-    bg_color=(0, 0, 0),
-    kind='overlay',
-    image_alpha=0  # (optional, aber verstärkt den Effekt)))
+    fig2, ax2 = plt.subplots(figsize=(5, 5))
+    ax2.imshow(color.label2rgb(
+        labels_ws,
+        bg_label=0,
+        bg_color=(0, 0, 0),
+        kind='overlay',
+        image_alpha=0))  # (optional, aber verstärkt den Effekt)))
 
 
 
