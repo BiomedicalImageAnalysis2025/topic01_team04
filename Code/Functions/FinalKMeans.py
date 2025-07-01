@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os # To save images
 from matplotlib import colors # To convert image models
-
+# Code for FinalKMeans.ipynb
 
 # K-Means clustering for image segmentation in RGB, HSV, and Grayscale
 # Modular implementation with init_centroids, assign_to_centroids, update_centroids
@@ -62,7 +62,7 @@ def preprocess_image(img, space='rgb'):
 def init_centroids(data, k, method='random'):
     """
     Initializes k centroids from the data.
-    - method='random': Random selection (MacQueen, 1967).
+    - method='random': Random selection
     - method='kmeans++': k-means++ seeding (Arthur & Vassilvitskii, 2007).
     """
     n_samples = data.shape[0]
@@ -88,6 +88,7 @@ def assign_to_centroids(data, centroids):
     Assigns each sample to the nearest centroid.
     Distance metric: Euclidean
     Returns: labels (n_samples,)
+    - centroids: 2D array with shape (k, n_features)
     """
     dists = np.linalg.norm(data[:, None, :] - centroids[None, :, :], axis=2)
     return np.argmin(dists, axis=1)
@@ -96,6 +97,7 @@ def assign_to_centroids(data, centroids):
 def update_centroids(data, labels, k):
     """
     Computes new centroids as the mean of the data points assigned to each cluster.
+    - labels: 1D array with cluster assignments (e.g., shape (n_samples,))
     """
     n_features = data.shape[1]
     centroids = np.zeros((k, n_features), dtype=float)
@@ -120,6 +122,10 @@ def kmeans(data, k, max_iters=100, tol=1e-4, init_method='kmeans++', space='rgb'
     Returns: centroids, labels, segmented_image
     - data: 2D array (n_samples, n_features) for RGB/HSV/Grayscale
     - k: number of clusters 
+    - max_iters: maximum number of iterations
+    - tol: tolerance for convergence, if the change in centroids is less than tol, stop
+    - init_method: 'random' or 'kmeans++' for centroid initialization
+    - space: 'rgb', 'hsv', or 'gray' for color space of the image
     """
     #Normalize data
     data = np.copy(data.astype(float))
@@ -152,9 +158,10 @@ def reconstruct_segmented_image(centroids, labels, data_shape, space):
     Reconstructs a segmented image from KMeans labels and centroids.
 
     Parameters:
-        labels: 1D array with cluster assignment for each pixel (e.g., shape (h*w,))
-        centroids: Array with centroids (e.g., shape (k, 1) for grayscale or (k, 3) for RGB)
-        data_shape: Tuple with the target image shape (e.g., (h, w) for grayscale, (h, w, 3) for RGB)
+    - labels: 1D array with cluster assignment for each pixel (e.g., shape (h*w,))
+    - centroids: Array with centroids (e.g., shape (k, 1) for grayscale or (k, 3) for RGB)
+    - data_shape: Tuple with the target image shape (e.g., (h, w) for grayscale, (h, w, 3) for RGB)
+    - space: 'rgb', 'hsv', or 'gray' to determine the color space of the image
 
     Returns:
         segmented_image: The reconstructed segmented image in original shape.
@@ -220,6 +227,10 @@ def elbow_method(data, max_k=10, max_iters=100, tol=1e-4, init_method='kmeans++'
     Parameters:
     - image: 3D numpy array representing the image.
     - max_k: Maximum number of clusters to test.
+    - max_iters: Maximum number of iterations for K-Means.
+    - tol: Tolerance for convergence, if the change in centroids is less than tol, stop.
+    - init_method: 'random' or 'kmeans++' for centroid initialization.
+    - space: 'rgb', 'hsv', or 'gray' for color space of the image.
 
     Returns:
     - wcss: List of WCSS values for each k.
@@ -268,7 +279,7 @@ def find_elbow(wcss):
     - wcss: List of WCSS values for each k.
 
     Returns:
-    - elbow_k: The k value where the elbow occurs.
+    - elbow: The k value where the elbow occurs.
     """
     n_points = len(wcss)
     all_k = np.arange(1, n_points + 1)
