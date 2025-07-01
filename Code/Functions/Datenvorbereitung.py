@@ -514,7 +514,7 @@ def apply_watershed(image, num_markers):
 
 
 # Segmentierte Zellen als Graustufenbild anzeigen
-    ax2.imshow(color.label2gray(labels_ws), cmap='gray')
+    ax2.imshow(color.label2rgb(labels_ws))
     ax2.axis('on')
     plt.tight_layout()
     plt.show()
