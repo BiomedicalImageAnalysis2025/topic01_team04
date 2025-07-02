@@ -26,9 +26,36 @@ For the Yeast cell image, we generated an artificial ground truth using an AI-ba
 Datasets can be viewed here: https://bmcv-nas01.bioquant.uni-heidelberg.de:5001/sharing/Dkx0iQWOP
 
 
+## structure of the repository
+Our repository has a modular structure and is organized by topic. Each subtopic has its own Jupyter Notebook and an associated Python file.
+The Jupyter Notebooks contain the implementation and visualization of the individual topics with accompanying explanations.
+The Python file contains the reusable functions that were used for the corresponding Jupyter Notebook. These files are stored in the functions folder.
+In addition, there is also a separate folder containing all saved images in all different variations and applications.
 
 
+### 1. Datenvorbereitung
+Here, the images were prepared for further use. The images were normalized, a z-transformation was performed, and different filters were applied to the images.
 
+### 2. Colormodels
+To check if different color models have an effect on segmentation, the images (yeast cell and cell nuclei) were converted from the RGB color model to the HSV color model and separated into individual channels (H, S, V).
+
+### 3. k-means
+A self-implemented k-means algorithm was used here and applied to the  images as a segmentation method.
+
+### 4. Otsu thresholding
+For the (... data set), the Otsu method, an automatic threshold determination for image segmentation, was applied.
+
+### 5. Dice score
+The Dice score was used to compare the self-segmented images with the ground truth to evaluate the accuracy of the segmentation.
+
+### 6. Cell distinction
+??????
+
+### 7. Filter Evaluation
+?????
+
+### 8. sklearn
+?????
 
 
 
