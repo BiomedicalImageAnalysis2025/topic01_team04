@@ -40,10 +40,10 @@ Here, the images were prepared for further use. The images were normalized, a z-
 To check if different color models have an effect on segmentation, the images (yeast cell and cell nuclei) were converted from the RGB color model to the HSV color model and separated into individual channels (H, S, V).
 
 ### 3. k-means
-A self-implemented k-means algorithm was used here and applied to the  images as a segmentation method.
+A self-implemented k-means algorithm was used here and applied to the images as a segmentation method.
 
 ### 4. Otsu thresholding
-For the (... data set), the Otsu method, an automatic threshold determination for image segmentation, was applied.
+For the N2DL HeLa cells, the Otsu method, an automatic threshold determination for image segmentation, was applied.
 
 ### 5. Dice score
 The Dice score was used to compare the self-segmented images with the ground truth to evaluate the accuracy of the segmentation.
