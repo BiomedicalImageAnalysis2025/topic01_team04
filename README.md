@@ -1,14 +1,39 @@
-# topic01_team04
-This is the README of this repository. During your work on this repository, you should start writing about what you did and how this repository is organized. For now, I added the following file:
-	.gitignore: Choose which files should be ignored by git (such as large files containing data). You will need this, so please also document what downloads you code needs.
+# Read.me Topic01 - Team04: Biomedical Image Analysis - Implementation and evaluation of clustering methods
+# Titel: Biocluster - A K-means approach
+### Data Analysis project SS25, B.Sc.Molekulare Biotechnologie
 
-For further information on the project, see https://github.com/maiwen-ch/2025_Data_Analysis_Topic_01_Biomedical_Image_Analysis, or https://github.com/maiwen-ch/2025_Data_Analysis_Project for general information.
-Datasets can be downloaded here: https://bmcv-nas01.bioquant.uni-heidelberg.de:5001/sharing/Dkx0iQWOP 
+#### **Supervisor:** Prof. Dr. Karl Rohr
 
-Suggestions:
-- Find out how to use GitHub Projects to organize your work
-- Find out how to load functions from separate file to keep markdown readable
-- Find out how to use GitHub Discussions. That way, you might get answers directly from AG Rohr in case I cannot answer a specific question.
+#### **Teams:** David Lehmann, David Dulkies, Jonas Schenker, David Schroth
+
+#### **Tutor:** Bastian Mucha
+
+
+## Introduction
+This project focuses on image segmentation using K-Means and other clustering methods.
+Segmentation techniques are powerful tools for accurately identifying and separating different parts of an image.
+We apply these methods to RGB images of cell nuclei and yeast cells, as well as grayscale images of HeLa cells, in order to highlight and analyze their structures in detail.
+This approach is particularly useful in biological and medical research, where precise analysis of cellular images plays a crucial role.
+To improve the clustering results, we applied several preprocessing techniques such as normalization and filtering to enhance image quality and prepare the data for segmentation.
+We also experimented with different color models, including HSV, to evaluate whether they help the clustering algorithm better distinguish key image features.
+As part of the project, we developed a custom K-Means algorithm from scratch and compared its performance to both the scikit-learn implementation of K-Means and Otsu thresholding, a classic image segmentation method.
+
+## Data Sets:
+For this project the data consists of three different datasets, showing cell nuclei, yeast cells and N2DL HeLa Cells. 
+A ground truth is only available for the HeLa cells images.
+For the Yeast cell image, we generated an artificial ground truth using an AI-based segmentation method with CellPose. 
+
+Datasets can be viewed here: https://bmcv-nas01.bioquant.uni-heidelberg.de:5001/sharing/Dkx0iQWOP
+
+
+
+
+
+
+
+
+
+
 
 
 
