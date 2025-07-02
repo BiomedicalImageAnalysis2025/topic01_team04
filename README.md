@@ -32,6 +32,19 @@ The Jupyter Notebooks contain the implementation and visualization of the indivi
 The Python file contains the reusable functions that were used for the corresponding Jupyter Notebook. These files are stored in the functions folder.
 In addition, there is also a separate folder containing all saved images in all different variations and applications.
 
+## How to use the Repository
+
+- Only Via Jupyter Notebooks - 
+
+1. Start    with [Datenvorbereitung.ipynb](Code/Datenvorbereitung.ipynb)
+2. Continue with [Colormodels.ipynb](Code/Colormodels.ipynb)
+3. Continue with [sklearn_clustering_cellpose.ipynb](code/sklearn_clustering_cellpose.ipynb)
+4. Continue with [Otsu_thresholding.ipynb](Code/Otsu_thresholding.ipynb)
+5. Continue with [FinalKMeans.ipynb](Code/FinalKMeans.ipynb)
+   Continue with [FilterEvaluation.ipynb](Code/FilterEvaluation.ipynb)
+   Continue with [CellDistiction.ipynb](Code/CellDistinction.ipynb)				 
+6. End      with [Final_Dice_Score.ipynb](Code/Final_Dice_Score.ipynb)
+
 
 ### 1. Datenvorbereitung
 Here, the images were prepared for further use. The images were normalized, a z-transformation was performed, and different filters were applied to the images.
