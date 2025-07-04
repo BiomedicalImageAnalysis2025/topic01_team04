@@ -1,3 +1,4 @@
+# Coded by David Lehmann
 # This code loads image pairs (prediction and ground truth), calculates the Dice score for segmentation evaluation and 
 # visualizes the results   
 

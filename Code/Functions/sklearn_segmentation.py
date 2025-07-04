@@ -11,23 +11,23 @@ import numpy as np
 
 def skcluster_image(image_array, n_clusters=2):
     """
-    Führt KMeans-Clustering auf einem Bild durch.
-    Unterstützt sowohl 2D (z.B. Hue) als auch 3D (z.B. RGB) Bilder.
+    Performs KMeans clustering on an image.
+    Supports both 2D (e.g., Hue) and 3D (e.g., RGB) images.
 
-    Parameter:
-    - image_array: NumPy-Array des Bildes (z.B. von plt.imread geladen), 2D oder 3D
-    - n_clusters: Anzahl der Cluster (Farben)
+    Parameters:
+    - image_array: NumPy array of the image (e.g., loaded with plt.imread), 2D or 3D
+    - n_clusters: Number of clusters (colors)
 
-    Rückgabe:
-    - clustered_img: Clustertes Bild als NumPy-Array (gleiches Format wie input)
+    Returns:
+    - clustered_img: Clustered image as a NumPy array (same format as input)
     """
     original_shape = image_array.shape
     
     if len(original_shape) == 2:
-        # 2D Bild (z.B. Hue), reshape zu (Pixelanzahl, 1)
+        # 2D image (e.g., Hue), reshape to (number of pixels, 1)
         pixels = image_array.reshape(-1, 1)
     elif len(original_shape) == 3:
-        # 3D Bild (z.B. RGB), reshape zu (Pixelanzahl, Kanäle)
+        # 3D image (e.g., RGB), reshape to (number of pixels, channels)
         pixels = image_array.reshape(-1, original_shape[2])
     else:
         raise ValueError("Unsupported image array shape: must be 2D or 3D")
@@ -46,19 +46,19 @@ def skcluster_image(image_array, n_clusters=2):
 
 def save_image(img, name, ext="tiff"):
 
-    # 1) Pfad zum Download-Ordner (Windows, macOS, Linux)
+    # 1) Path to the Downloads folder (Windows, macOS, Linux)
     downloads = os.path.join(os.path.expanduser("~"), "Downloads")
-    # 2) kompletten Dateinamen zusammenbauen
+    # 2) Build the complete filename
     filename = f"{name}.{ext.lstrip('.')}"
     output_path = os.path.join(downloads, filename)
-    # 3) sicherstellen, dass es den Ordner gibt
+    # 3) Ensure that the folder exists
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    # 4) speichern
+    # 4) Save
     success = cv2.imwrite(output_path, img)
     if success:
-        print(f"Bild gespeichert unter: {output_path}")
+        print(f"Image saved at: {output_path}")
     else:
-        print(f"❌ Fehler beim Speichern von: {output_path}")
+        print(f"❌ Error saving: {output_path}")
 
 
 
@@ -67,29 +67,29 @@ from sklearn.cluster import KMeans
 
 def skcluster_watershed(image_array, n_clusters=2):
     """
-    Führt KMeans-Clustering auf einem Graustufen- (2D) oder Farb- (3D) Bild durch.
-    Für Watershed-Bilder in Graustufen (2D) funktioniert das direkt.
+    Performs KMeans clustering on a grayscale (2D) or color (3D) image.
+    Works directly for watershed images in grayscale (2D).
     
-    Parameter:
-    - image_array: NumPy-Array des Bildes (2D Graustufen oder 3D Farb)
-    - n_clusters: Anzahl der Cluster (Farben)
+    Parameters:
+    - image_array: NumPy array of the image (2D grayscale or 3D color)
+    - n_clusters: Number of clusters (colors)
     
-    Rückgabe:
-    - clustered_img: Bild mit Pixeln auf die jeweiligen Cluster-Zentren gerundet,
-      gleiche Form und Typ wie das Input-Bild (float->float, uint8->uint8)
+    Returns:
+    - clustered_img: Image with pixels rounded to their respective cluster centers,
+      same shape and type as the input image (float->float, uint8->uint8)
     """
     original_shape = image_array.shape
     
-    # 2D Graustufen: reshape zu (Pixelanzahl, 1)
+    # 2D grayscale: reshape to (number of pixels, 1)
     if len(original_shape) == 2:
         pixels = image_array.reshape(-1, 1)
-    # 3D Farb: reshape zu (Pixelanzahl, Kanäle)
+    # 3D color: reshape to (number of pixels, channels)
     elif len(original_shape) == 3:
         pixels = image_array.reshape(-1, original_shape[2])
     else:
         raise ValueError("Unsupported image shape: only 2D or 3D arrays supported.")
     
-    # Falls Bild float mit 0..1, für KMeans besser auf 0..255 skalieren (optional)
+    # If image is float with 0..1, better to scale to 0..255 for KMeans (optional)
     if pixels.dtype == np.float32 or pixels.dtype == np.float64:
         if pixels.max() <= 1.0:
             pixels = pixels * 255
@@ -101,7 +101,7 @@ def skcluster_watershed(image_array, n_clusters=2):
     clustered = kmeans.cluster_centers_[kmeans.labels_]
     clustered_img = clustered.reshape(original_shape)
     
-    # Rückskalierung falls nötig (float)
+    # Rescale if necessary (float)
     if image_array.dtype == np.uint8:
         clustered_img = np.clip(clustered_img, 0, 255).astype(np.uint8)
     else:
@@ -115,55 +115,55 @@ from sklearn.cluster import KMeans
 
 def skcluster_hsv_image(hsv_image, n_clusters=2):
     """
-    Führt KMeans-Clustering auf einem HSV-Bild durch.
-    Dabei wird der Hue-Kanal zirkulär in Sin und Cos umgewandelt,
-    um den Farbton korrekt abzubilden.
+    Performs KMeans clustering on an HSV image.
+    The Hue channel is circularly converted into sine and cosine
+    to correctly represent the color hue.
 
-    Parameter:
-    - hsv_image: NumPy-Array (HxWx3), mit Kanälen [Hue, Saturation, Value].
-                 Hue wird erwartet als normierter Wert [0,1], entspricht 0°-360°.
-    - n_clusters: Anzahl der Cluster.
+    Parameters:
+    - hsv_image: NumPy array (HxWx3), with channels [Hue, Saturation, Value].
+                 Hue is expected as normalized value [0,1], corresponding to 0°-360°.
+    - n_clusters: Number of clusters.
 
-    Rückgabe:
-    - clustered_img: NumPy-Array, gleiche Form wie hsv_image,
-                     mit den Cluster-Zentren (Features) als Pixelwerte.
+    Returns:
+    - clustered_img: NumPy array, same shape as hsv_image,
+                     with cluster centers (features) as pixel values.
     """
 
-    # Sicherstellen, dass hsv_image float ist
+    # Ensure hsv_image is float
     hsv = hsv_image.astype(np.float32)
     
-    # Hue (0-1) in Winkel (0-2pi)
+    # Hue (0-1) to angle (0-2pi)
     hue_angle = hsv[:, :, 0] * 2 * np.pi
     
-    # Hue zirkulär als Sin und Cos
+    # Hue circular as sine and cosine
     hue_sin = np.sin(hue_angle)
     hue_cos = np.cos(hue_angle)
     
-    # Saturation und Value bleiben wie sie sind
+    # Saturation and Value remain as they are
     sat = hsv[:, :, 1]
     val = hsv[:, :, 2]
     
-    # Feature-Matrix vorbereiten (HxWx4)
+    # Prepare feature matrix (HxWx4)
     features = np.stack([hue_sin, hue_cos, sat, val], axis=-1)
     
-    # Umformen in (Pixelanzahl x Featureanzahl)
+    # Reshape to (number of pixels x number of features)
     pixels = features.reshape(-1, 4)
     
     # KMeans Clustering
     kmeans = KMeans(n_clusters=n_clusters, n_init='auto', random_state=0)
     kmeans.fit(pixels)
     
-    # Clusterzentren zurück als Bild (Pixelweise Clusterzentren-Werte)
+    # Cluster centers back as image (pixelwise cluster center values)
     clustered_pixels = kmeans.cluster_centers_[kmeans.labels_]
     clustered_img = clustered_pixels.reshape(hsv.shape[0], hsv.shape[1], 4)
     
-    # Optional: zurück zu "normalem" HSV (Hue als Winkel aus Sin & Cos)
-    # Hue neu berechnen:
+    # Optional: back to "normal" HSV (Hue as angle from Sin & Cos)
+    # Recalculate Hue:
     new_hue = (np.arctan2(clustered_img[:, :, 0], clustered_img[:, :, 1]) / (2 * np.pi)) % 1.0
     new_sat = clustered_img[:, :, 2]
     new_val = clustered_img[:, :, 3]
     
-    # Endbild HSV (HxWx3)
+    # Final HSV image (HxWx3)
     clustered_hsv = np.stack([new_hue, new_sat, new_val], axis=-1)
     
     return clustered_hsv
@@ -175,21 +175,17 @@ from skimage.io import imread
 from cellpose import models, plot
 from skimage.io import imwrite
 
-# Deine save_image_gt-Funktion
+# Your save_image_gt function
 def save_image_gt(img, name, ext="tiff"):
-    # Pfad zum Downloads-Ordner (macOS)
+    # Path to the Downloads folder (macOS)
     downloads = os.path.join(os.path.expanduser("~"), "Downloads")
     filename = f"{name}.{ext.lstrip('.')}"
     output_path = os.path.join(downloads, filename)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     try:
-        # Speichern in 16-bit, um Zell-IDs nicht zu verlieren
+        # Save in 16-bit to preserve cell IDs
         imwrite(output_path, img.astype("uint16"))
-        print(f"✅ Bild gespeichert unter: {output_path}")
+        print(f"✅ Image saved at: {output_path}")
     except Exception as e:
-        print(f"❌ Fehler beim Speichern von: {output_path}")
+        print(f"❌ Error saving: {output_path}")
         print(e)
-
-
-
-

@@ -1223,3 +1223,86 @@ def evaluate_and_plot_dice_cells_test2(image_pairs, title="Dice Score Comparison
     plt.show()
 
     return df
+def evaluate_and_plot_dice_cells_no_inversion(image_pairs, title="Dice Score Comparison (No Inversion)"):
+    results = []
+
+    for pred_path, gt_path in image_pairs:
+        try:
+            y_pred = robust_image_loader(pred_path)
+            y_true = robust_image_loader(gt_path)
+        except FileNotFoundError as e:
+            print(f"Datei nicht gefunden: {e}")
+            continue
+
+        # In Graustufen konvertieren
+        y_pred_gray = convert_to_grayscale(y_pred)
+        y_true_gray = convert_to_grayscale(y_true)
+
+        # Normalisieren (0–255)
+        y_pred_norm = normalize_image(y_pred_gray)
+        y_true_norm = normalize_image(y_true_gray)
+
+        # Größenangleichung
+        if y_pred_norm.shape != y_true_norm.shape:
+            y_true_norm = cv2.resize(y_true_norm, (y_pred_norm.shape[1], y_pred_norm.shape[0]), interpolation=cv2.INTER_NEAREST)
+
+        # Binarisieren
+        y_true_bin = binarize_image(y_true_norm, method='nonzero')
+        y_pred_bin = binarize_image(y_pred_norm, method='threshold', threshold=128)
+
+        # Dice Score berechnen (kein Invertieren)
+        dice_score = dice_coefficient(y_true_bin, y_pred_bin)
+
+        results.append({
+            'Bild': os.path.basename(pred_path),
+            'DiceScore': dice_score
+        })
+
+        # Visualisierung
+        plt.figure(figsize=(12, 4))
+        plt.suptitle(f"Overlap of segmented Images: {os.path.basename(pred_path)}")
+
+        plt.subplot(1, 3, 1)
+        plt.imshow(y_true_bin, cmap='gray')
+        plt.title("Ground Truth")
+
+        plt.subplot(1, 3, 2)
+        plt.imshow(y_pred_bin, cmap='gray')
+        plt.title("Prediction")
+
+        plt.subplot(1, 3, 3)
+        overlay = np.zeros((*y_true_bin.shape, 3), dtype=np.uint8)
+        overlay[y_true_bin == 1] = [255, 0, 0]   # Ground Truth in Rot
+        overlay[y_pred_bin == 1] = [0, 0, 255]   # Prediction in Blau
+        plt.imshow(overlay)
+        plt.title("Overlap")
+
+        plt.tight_layout()
+        plt.show()
+
+    # Plot aller Scores als Balkendiagramm
+    df = pd.DataFrame(results)
+
+    sns.set_theme(style="whitegrid")
+    plt.figure(figsize=(10, 6))
+
+    n_bars = len(df)
+    colors = sns.color_palette("tab10", n_bars)
+
+    barplot = sns.barplot(data=df, x='Bild', y='DiceScore', hue='Bild', palette=colors, edgecolor='black', dodge=False)
+    plt.legend([], [], frameon=False)  # Keine Legende
+
+    for p in barplot.patches:
+        barplot.annotate(f'{p.get_height():.3f}',
+                         (p.get_x() + p.get_width() / 2, p.get_height()),
+                         ha='center', va='bottom', fontsize=10)
+
+    plt.xticks(rotation=45, ha='right')
+    plt.ylim(0, 1)
+    plt.ylabel("Dice Score")
+    plt.xlabel("Picture")
+    plt.title(title)
+    plt.tight_layout()
+    plt.show()
+
+    return df
