@@ -2,7 +2,7 @@
 # Titel: Biocluster - A K-means approach
 ### Data Analysis project SS25, B.Sc.Molekulare Biotechnologie
 
-#### **Supervisor:** Prof. Dr. Karl Rohr
+#### **Supervisor:** Prof. Dr. Karl Rohr, Dr. Leonid Kostrykin
 
 #### **Teams:** David Lehmann, David Dulkies, Jonas Schenker, David Schroth
 
