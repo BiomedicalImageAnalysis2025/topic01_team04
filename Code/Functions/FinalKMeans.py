@@ -202,8 +202,8 @@ def save_image_universal(image, path, space='rgb'):
     img = np.copy(image)
     if space == 'hsv':
         # convert HSV to RGB if necessary
-        #if img.max() > 1.0:
-         #   img = img / 255.0
+        if img.max() > 1.0:
+            img = img / 255.0
         #img = colors.hsv_to_rgb(img)  #conversion already done in reconstruct_segmented_image done
         plt.imsave(path, img)
     elif space == 'rgb':
