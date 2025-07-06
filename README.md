@@ -52,8 +52,8 @@ Here, the images were prepared for further use. The images were normalized, a z-
 ### 2. Colormodels
 To check if different color models have an effect on segmentation, the images (yeast cell and cell nuclei) were converted from the RGB color model to the HSV color model and separated into individual channels (H, S, V).
 
-### 3. sklearn
-?????
+### 3. sklearn and Cellpose
+For cell segmentation, KMeans clustering algorithms from sklearn were used to divide the images into different clusters. In addition, Cellpose was used, a deep learning-based tool specifically designed for precise cell segmentation.
 
 ### 4. Otsu thresholding
 For the N2DL HeLa cells, the Otsu method, an automatic threshold determination for image segmentation, was applied.
