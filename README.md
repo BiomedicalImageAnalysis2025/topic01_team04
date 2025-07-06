@@ -53,7 +53,7 @@ Here, the images were prepared for further use. The images were normalized, a z-
 To check if different color models have an effect on segmentation, the images (yeast cell and cell nuclei) were converted from the RGB color model to the HSV color model and separated into individual channels (H, S, V).
 
 ### 3. sklearn and Cellpose
-For cell segmentation, KMeans clustering algorithms from sklearn were used to divide the images into different clusters. In addition, Cellpose was used, a deep learning-based tool specifically designed for precise cell segmentation.
+To create a reference mask, KMeans clustering algorithms from sklearn were used to divide the images into different clusters to see if our self implemented kmeans works correct. In addition, Cellpose was used, a deep learning-based tool specifically designed for precise cell segmentation.
 
 ### 4. Otsu thresholding
 For the N2DL HeLa cells, the Otsu method, an automatic threshold determination for image segmentation, was applied.
@@ -68,7 +68,7 @@ Here we apply k-Means on t13 with different filters to later evaluate, using the
 Additional features (coordinates) besides intensity were used to cluster N2DL HeLa image t13. Moreover we tried to find out how many clusters are "optimal" using the Elbow Method
 
 ### 8. Dice score
-The Dice score was used to compare the self-segmented images with the ground truth to evaluate the accuracy of the segmentation.
+The Dice score was used to compare the self-segmented images with the reference masks to evaluate the accuracy of the segmentation.
 
 
 ## Used AI Tools:
