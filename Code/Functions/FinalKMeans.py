@@ -1,10 +1,10 @@
-#Coded by Jonas Schenker
+# Coded by Jonas Schenker
+# Code for FinalKMeans.ipynb
 
 import numpy as np
 import matplotlib.pyplot as plt
 import os # To save images
 from matplotlib import colors # To convert image models
-# Code for FinalKMeans.ipynb
 
 # K-Means clustering for image segmentation in RGB, HSV, and Grayscale
 # Modular implementation with init_centroids, assign_to_centroids, update_centroids
