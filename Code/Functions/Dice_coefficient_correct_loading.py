@@ -1,4 +1,5 @@
 # Coded by David Lehmann
+# Code for Final_Dice_Score.ipynb
 # This code loads image pairs (prediction and ground truth), calculates the Dice score for segmentation evaluation and 
 # visualizes the results   
 
