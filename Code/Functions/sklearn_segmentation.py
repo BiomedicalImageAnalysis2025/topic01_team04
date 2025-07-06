@@ -1,3 +1,4 @@
+#Coded by David Lehmann
 #Sklearn KMeans clustering for segmentation of images
 import cv2
 import numpy as np
