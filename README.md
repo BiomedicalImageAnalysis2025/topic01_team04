@@ -41,9 +41,9 @@ In addition, there is also a separate folder containing all saved images in all 
 3. Continue with [sklearn_clustering_cellpose.ipynb](code/sklearn_clustering_cellpose.ipynb)
 4. Continue with [Otsu_thresholding.ipynb](Code/Otsu_thresholding.ipynb)
 5. Continue with [FinalKMeans.ipynb](Code/FinalKMeans.ipynb)
-   Continue with [FilterEvaluation.ipynb](Code/FilterEvaluation.ipynb)
-   Continue with [CellDistiction.ipynb](Code/CellDistinction.ipynb)				 
-6. End      with [Final_Dice_Score.ipynb](Code/Final_Dice_Score.ipynb)
+6. Continue with [FilterEvaluation.ipynb](Code/FilterEvaluation.ipynb)
+7. Continue with [CellDistiction.ipynb](Code/CellDistinction.ipynb)				 
+8. End      with [Final_Dice_Score.ipynb](Code/Final_Dice_Score.ipynb)
 
 
 ### 1. Datenvorbereitung
@@ -52,23 +52,34 @@ Here, the images were prepared for further use. The images were normalized, a z-
 ### 2. Colormodels
 To check if different color models have an effect on segmentation, the images (yeast cell and cell nuclei) were converted from the RGB color model to the HSV color model and separated into individual channels (H, S, V).
 
-### 3. k-means
-A self-implemented k-means algorithm was used here and applied to the images as a segmentation method.
+### 3. sklearn
+?????
 
 ### 4. Otsu thresholding
 For the N2DL HeLa cells, the Otsu method, an automatic threshold determination for image segmentation, was applied.
 
-### 5. Dice score
+### 5. k-means
+A self-implemented k-means algorithm was implemented and applied to the images as a segmentation method.
+
+### 6. Filter Evaluation
+Here we apply k-Means on t13 with different filters to later evaluate, using the dice score, which filter improves image segmentation. Moreover we apply k-Means on a thresholded HSV image to evaluate if reducing halos via thresholding improves image segmentation.
+
+### 7. Cell distinction
+Additional features (coordinates) besides intensity were used to cluster N2DL HeLa image t13. Moreover we tried to find out how many clusters are "optimal" using the Elbow Method
+
+### 8. Dice score
 The Dice score was used to compare the self-segmented images with the ground truth to evaluate the accuracy of the segmentation.
 
-### 6. Cell distinction
-??????
 
-### 7. Filter Evaluation
-?????
+## Used AI Tools:
+Chat-GPT-4.1
 
-### 8. sklearn
-?????
+## References:
+- Vassilvitskii, Sergei, and David Arthur. "k-means++: The advantages of careful seeding." Proceedings of the eighteenth annual ACM-SIAM
+  symposium on Discrete algorithms. 2007.
+- DSPA2: Data Science and Predictive Analytics (UMich HS650), VIII. Unsupervised Clustering.
+- Stringer, C., Wang, T., Michaelos, M., & Pachitariu, M. (2021). Cellpose: a generalist algorithm for cellular segmentation. Nature Methods,
+  18(1), 100-106.
 
 
 
@@ -129,12 +140,3 @@ The Dice score was used to compare the self-segmented images with the ground tru
 
 
 
-
-
-
-
-
-
-
-
-hhhhhhhhhh
