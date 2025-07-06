@@ -173,7 +173,7 @@ import os
 import matplotlib.pyplot as plt
 from skimage.io import imread
 from cellpose import models, plot
-from skimage.io import imwrite
+from imageio import imwrite
 
 # Your save_image_gt function
 def save_image_gt(img, name, ext="tiff"):
