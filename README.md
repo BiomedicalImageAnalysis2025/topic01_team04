@@ -53,7 +53,7 @@ Here, the images were prepared for further use. The images were normalized, a z-
 To check if different color models have an effect on segmentation, the images (yeast cell and cell nuclei) were converted from the RGB color model to the HSV color model and separated into individual channels (H, S, V).
 
 ### 3. k-means
-A self-implemented k-means algorithm was used here and applied to the images as a segmentation method.
+A self-implemented k-means algorithm was implemented and applied to the images as a segmentation method.
 
 ### 4. Otsu thresholding
 For the N2DL HeLa cells, the Otsu method, an automatic threshold determination for image segmentation, was applied.
@@ -62,13 +62,25 @@ For the N2DL HeLa cells, the Otsu method, an automatic threshold determination f
 The Dice score was used to compare the self-segmented images with the ground truth to evaluate the accuracy of the segmentation.
 
 ### 6. Cell distinction
-??????
+Additional features (coordinates) besides intensity were used to cluster N2DL HeLa image t13. Moreover we tried to find out how many clusters are "optimal" using the Elbow Method
 
 ### 7. Filter Evaluation
-?????
+Here we apply k-Means on t13 with different filters to later evaluate, using the dice score, which filter improves image segmentation. Moreover we apply k-Means on a thresholded HSV image to evaluate if reducing halos via thresholding improves image segmentation.
 
 ### 8. sklearn
 ?????
+
+## Used AI Tools:
+Chat-GPT-4.1
+
+## References:
+- Vassilvitskii, Sergei, and David Arthur. "k-means++: The advantages of careful seeding." Proceedings of the eighteenth annual ACM-SIAM
+  symposium on Discrete algorithms. 2007.
+- DSPA2: Data Science and Predictive Analytics (UMich HS650), VIII. Unsupervised Clustering.
+- Stringer, C., Wang, T., Michaelos, M., & Pachitariu, M. (2021). Cellpose: a generalist algorithm for cellular segmentation. Nature Methods,
+  18(1), 100-106.
+
+
 
 
 

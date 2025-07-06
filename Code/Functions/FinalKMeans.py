@@ -273,7 +273,7 @@ def plot_elbow_method(wcss):
 # Function to identify the k where the elbow occurs (The "elbow" is the point farthest from the line connecting the first and last point ("knee point" using the "distance to line" method).)
 def find_elbow(wcss):
     """
-    Identifies the elbow point in the WCSS values using the 'distance to line' method.
+    Identifies the elbow point in the WCSS values using the 'distance to line' method. (DSPA2: Data Science and Predictive Analytics (UMich HS650), VIII. Unsupervised Clustering.)
 
     Parameters:
     - wcss: List of WCSS values for each k.
