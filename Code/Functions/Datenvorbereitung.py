@@ -435,7 +435,7 @@ def remove_alpha_channel(image):
         return image  # RGB bleibt 
     
 
-# --- KI-generated code START --- DeepSeek AI ---
+# --- AI-generated code START --- DeepSeek AI ---
 
 def apply_watershed(image, num_markers):
     """
@@ -522,7 +522,7 @@ def apply_watershed(image, num_markers):
 
     return labels_ws
 
-# --- KI-generated code ENDE --- DeepSeek AI ---
+# --- AI-generated code END --- DeepSeek AI ---
 
 
 
