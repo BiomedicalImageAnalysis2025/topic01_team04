@@ -81,9 +81,9 @@ DeepSeek R1
 - DSPA2: Data Science and Predictive Analytics (UMich HS650), VIII. Unsupervised Clustering.
 - Stringer, C., Wang, T., Michaelos, M., & Pachitariu, M. (2021). Cellpose: a generalist algorithm for cellular segmentation. Nature    Methods, 18(1), 100-106.
 
-## Installation
+## Installation of Packages
 
- **Virtuelle Umgebung erstellen & aktivieren**  
+ **Virtual environment**  
    ```bash
    python -m venv .venv
    # macOS/Linux
