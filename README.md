@@ -73,13 +73,36 @@ The Dice score was used to compare the self-segmented images with the reference 
 
 ## Used AI Tools:
 Chat-GPT-4.1
+DeepSeek R1
 
 ## References:
 - Vassilvitskii, Sergei, and David Arthur. "k-means++: The advantages of careful seeding." Proceedings of the eighteenth annual ACM-SIAM
   symposium on Discrete algorithms. 2007.
 - DSPA2: Data Science and Predictive Analytics (UMich HS650), VIII. Unsupervised Clustering.
-- Stringer, C., Wang, T., Michaelos, M., & Pachitariu, M. (2021). Cellpose: a generalist algorithm for cellular segmentation. Nature Methods,
-  18(1), 100-106.
+- Stringer, C., Wang, T., Michaelos, M., & Pachitariu, M. (2021). Cellpose: a generalist algorithm for cellular segmentation. Nature    Methods, 18(1), 100-106.
+
+## Installation
+
+ **Virtuelle Umgebung erstellen & aktivieren**  
+   ```bash
+   python -m venv .venv
+   # macOS/Linux
+   source .venv/bin/activate
+   # Windows (PowerShell)
+   .\.venv\Scripts\Activate.ps1
+
+ 
+### Data Preparation
+
+pip install \
+   numpy>=1.24.0,<2.0.0 \
+   opencv-python>=4.7.0,<5.0.0 \
+   matplotlib>=3.7.0,<4.0.0 \
+   scikit-image>=0.21.0,<1.0.0 \
+   scipy>=1.11.0,<2.0.0
+
+
+
 
 
 
