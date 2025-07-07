@@ -214,12 +214,12 @@ def evaluate_segmentation_line(otsu_pairs, kmeans_pairs, title="Comparison of me
 
         return pd.DataFrame(results)
 
-    # Auswertung
+    # Evaluate
     df_otsu = evaluate(otsu_pairs, methode_name="Otsu")
     df_kmeans = evaluate(kmeans_pairs, methode_name="KMeans")
     df_combined = pd.concat([df_otsu, df_kmeans], ignore_index=True)
 
-    # Sortierung nach TName
+    # sort after TName
     df_combined['TName'] = pd.Categorical(
         df_combined['TName'],
         categories=sorted(df_combined['TName'].unique(), key=lambda x: int(x[1:])),
@@ -270,23 +270,24 @@ def evaluate_and_plot_dice_cells_filter_otsu_kmeans(image_pairs, title="Dice Sco
             print(f"Datei nicht gefunden: {e}")
             continue
 
-        # Beide Bilder auf gleichen Farbraum (Graustufen)
+        # Both images to grayscale
         y_pred_gray = convert_to_grayscale(y_pred)
         y_true_gray = convert_to_grayscale(y_true)
 
-        # Normalisieren (0–255, uint8)
+        # Normalize images to 0-255 uint8
         y_pred_norm = normalize_image(y_pred_gray)
         y_true_norm = normalize_image(y_true_gray)
 
-        # Größenangleichung
+        # Resize images to match dimensions
         if y_pred_norm.shape != y_true_norm.shape:
             y_true_norm = cv2.resize(y_true_norm, (y_pred_norm.shape[1], y_pred_norm.shape[0]), interpolation=cv2.INTER_NEAREST)
 
-        # Binarisierung
+        # Binarize images
         y_true_bin = binarize_image(y_true_norm, method='nonzero')
         y_pred_bin = binarize_image(y_pred_norm, method='threshold', threshold=128)
 
-        # Dice Score (ggf. invertiert)
+        # Calculate Dice Score
+        # If the prediction is inverted, check if it gives a better score   
         dice_score = dice_coefficient(y_true_bin, y_pred_bin)
         dice_inverted = dice_coefficient(y_true_bin, 1 - y_pred_bin) # Check if inverted prediction gives better score
 
@@ -294,9 +295,9 @@ def evaluate_and_plot_dice_cells_filter_otsu_kmeans(image_pairs, title="Dice Sco
             y_pred_bin = 1 - y_pred_bin
             dice_score = dice_inverted
 
-        # Lesbarer Bildname: Otsu-Bilder behalten 'Otsu_' im Namen
+        # Extract raw name from prediction path
         raw_name = os.path.splitext(os.path.basename(pred_path))[0]
-        # Entferne nur "Prediction_", "norm" und ersetze "seg" bei Ground Truth
+        # Clean up the name for better readability
         clean_name = raw_name
         clean_name = clean_name.replace("Prediction_", "")
         clean_name = clean_name.replace("norm", "")
@@ -306,7 +307,7 @@ def evaluate_and_plot_dice_cells_filter_otsu_kmeans(image_pairs, title="Dice Sco
 
         results.append({'Bild': clean_name, 'DiceScore': dice_score})
 
-        # Vergleichsplots anzeigen
+        # Plotting the results
         plt.figure(figsize=(12, 4))
         plt.suptitle(f"Overlap of segmented Images: {raw_name}")
 
