@@ -92,7 +92,7 @@ DeepSeek R1
    .\.venv\Scripts\Activate.ps1
 
  
-### Data Preparation
+### Important Packages
 
 pip install \
    numpy>=1.24.0,<2.0.0 \
@@ -100,6 +100,14 @@ pip install \
    matplotlib>=3.7.0,<4.0.0 \
    scikit-image>=0.21.0,<1.0.0 \
    scipy>=1.11.0,<2.0.0
+   scikit-learn>=1.2.0,<2.0.0 \
+   imageio>=2.27.0,<3.0.0 \
+   cellpose>=2.2.0,<3.0.0 \
+   seaborn>=0.12.0,<1.0.0 \
+   pandas>=1.5.0,<2.0.0 \
+   Pillow>=9.4.0,<11.0.0
+
+
 
 
 
